@@ -1,7 +1,9 @@
 # FlipDisplay
 ##### Open Source Mechanical Flip Display
 
-This is a widely-expandable flip character display. Each character utilizes a position sensor in order to ensure accuracy of character display.
+This is a widely-expandable flip character display. Each character utilizes a position sensor in order to ensure accuracy of character display. Here is a brief video of testing a single 4 character module:  
+
+https://user-images.githubusercontent.com/819400/133915666-44a9a4c3-e8a3-4bca-b873-4fb1c010d5b9.mp4
 
 ## Firmware
 Currently set up to grab and display random words
