@@ -6,6 +6,11 @@
 #include "FlipDisplay_Registers.h"
 
 /**
+ * Perform the initial character control setup
+ */
+void setupCharacterControl();
+
+/**
  * Set the display to a new value
  */
 void setDisplayString(String newString);
@@ -31,11 +36,6 @@ int getStepsPerCharacter(int board, int motor);
 void addOffsetSteps(int board, int motor);
 
 /**
- * get the offset amount (how many steps the motor needs to move to be perfectly aligned at 0)
- */
-int getCharacterOffset(int board, int motor);
-
-/**
  * get the number of steps the motor needs to move to reach the new character
  */
 int getCharDistance(int board, int motor, char target);
@@ -44,5 +44,7 @@ int getCharDistance(int board, int motor, char target);
  * step any motors that are active moving
  */
 void stepMovingMotors();
+
+bool allMotorsArePaused();
 
 #endif

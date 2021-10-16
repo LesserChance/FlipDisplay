@@ -1,7 +1,7 @@
 #include "FlipDisplay_Reset.h"
 
 void resetAll() {
-  Serial.println("-- RESETTING DISPLAY --");
+  Serial.println("-- RESETTING DISPLAY --");  
   for (int board = 0; board < BOARD_COUNT; board++) {
     for (int motor = 0; motor < MOTOR_COUNT; motor++) {
       resetMotor(board, motor);
@@ -15,9 +15,10 @@ void resetAll() {
 void resetMotor(int board, int motor) {
   // output high on the correct button register
   updateButtonRegister(board, motor);
-
+  
   // write registers to output the button data before reading
   writeRegisters();
+  delay(2);
 
   // run the motor reset
   resetMotorPosition(board, motor);
@@ -81,21 +82,22 @@ void resetMotor(int board, int motor) {
  */
 void resetMotorPosition(int board, int motor) {
   // always move a couple steps to get past a button (assuming we started on one)
-  // TODO: this could fail if it moves us to a button, could probably use something like stepMotorsToValue from above
-  for (int i = getStepsPerCharacter(board, motor) * 5; i > 0; i--) {
-    stepMotor(board, motor);
-    writeRegisters();
+  if (!isButtonTriggered(board)) {
+    for (int i = getStepsPerCharacter(board, motor) * 5; i > 0; i--) {
+      stepMotor(board, motor);
+      writeRegisters();
+    }
   }
 
   // loop listener will be unattached through an interrupt once the start position is reached
-  attachLoopListener();
-  while (isLoopListenerAttached()) {
+  attachLoopListener(board, motor);
+  while (isLoopListenerAttached(board)) {
     stepMotor(board, motor);
     writeRegisters();
   }
 
   // advance more to match the starting offset
-  for (int i = getCharacterOffset(board, motor); i > 0; i--) {
+  for (int i = CHARACTER_OFFSET[board][motor]; i > 0; i--) {
     stepMotor(board, motor);
     writeRegisters();
   }

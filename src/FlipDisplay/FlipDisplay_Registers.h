@@ -13,7 +13,7 @@ void setupRegisters();
 /**
  * return the pin to use for the interrupt tirgger
  */
-int getMotorStartPin();
+int getMotorStartPin(int board);
 
 /**
  * put a motor into a paused state
@@ -26,9 +26,9 @@ void pauseMotor(int board, int motor);
 void stepMotor(int board, int motor);
 
 /**
- * Read the motor start pin, and return the value
+ * Read the motor start pin, and return true if its triggered
  */
-int isButtonTriggered();
+int isButtonTriggered(int board);
 
 /**
  * Update the button register to read from the passed in board/motor
@@ -54,5 +54,8 @@ void updateMotorRegister(int board, int motor);
  * output the current data to the shift registers
  */
 void writeRegisters();
+
+void disableBoard(int board);
+void enableBoard(int board);
 
 #endif

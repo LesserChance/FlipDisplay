@@ -1,35 +1,66 @@
 #include "FlipDisplay_LoopDetection.h"
 
-// how many loops should be allowed before resetting the zero position - higher makes it less likely for collisions
-const int LOOP_RESET_THRESHOLD = 2; 
-
 // count down from LOOP_RESET_THRESHOLD, when at 0, reset the 0 position
-int loopResetCount[BOARD_COUNT][MOTOR_COUNT] = {{LOOP_RESET_THRESHOLD, LOOP_RESET_THRESHOLD, LOOP_RESET_THRESHOLD, LOOP_RESET_THRESHOLD}};
+int loopResetCount[BOARD_COUNT][MOTOR_COUNT];
 
 // board, motor, charIndex
 int detectingLoop[3] = {-1, -1, -1};
 
-volatile bool listenForStartTrigger = false;
+const int FULL_RESET_ON_LOOP = 10;
+int totalLoops = 0;
+
+volatile bool listenForStartTrigger[BOARD_COUNT];
 volatile unsigned long startTriggerDebounce = 0;
+volatile int triggerMotor[BOARD_COUNT];
 
 void setupLoopDetection() {
-  attachInterrupt(digitalPinToInterrupt(getMotorStartPin()), trigger_motorAtStart, FALLING);
+  attachInterrupt(digitalPinToInterrupt(getMotorStartPin(0)), trigger_motorAtStart0, FALLING);
+//  attachInterrupt(digitalPinToInterrupt(getMotorStartPin(1)), trigger_motorAtStart1, FALLING);
+
+  for (int board = 0; board < BOARD_COUNT; board++) {
+    listenForStartTrigger[board] = false;
+    listenForStartTrigger[board] = -1;
+    for (int motor = 0; motor < MOTOR_COUNT; motor++) {
+      loopResetCount[BOARD_COUNT][MOTOR_COUNT] = LOOP_RESET_THRESHOLD;
+    }
+  }
 }
 
-void attachLoopListener() {
-  listenForStartTrigger = true;
+void attachLoopListener(int board, int motor) {
+//  Serial.println("waiting to loop");
+//  Serial.print("board:");
+//  Serial.println(board);
+//  Serial.print("motor:");
+//  Serial.println(motor);
+  listenForStartTrigger[board] = true;
+  triggerMotor[board] = motor;
 }
 
-void unattachLoopListener() {
-  listenForStartTrigger = false;
+void unattachLoopListener(int board) {
+  listenForStartTrigger[board] = false;
+  triggerMotor[board] = -1;
 }
 
-bool isLoopListenerAttached() {
-  return listenForStartTrigger;
+bool isLoopListenerAttached(int board) {
+  return listenForStartTrigger[board];
 }
 
-void trigger_motorAtStart() {
-  if (isLoopListenerAttached() && !isButtonTriggered()) {
+void trigger_motorAtStart0() {
+  trigger_motorAtStart(0);
+}
+
+void trigger_motorAtStart1() {
+  trigger_motorAtStart(1);
+}
+
+void trigger_motorAtStart(int board) {
+  if (isLoopListenerAttached(board) && isButtonTriggered(board)) {
+//    Serial.println("trigger_motorAtStart");
+//    Serial.print("board: ");
+//    Serial.println(board);
+//    Serial.print("motor: ");
+//    Serial.println(triggerMotor[board]);
+    
     // a motor we were listening to has hit its start position
     unsigned long currentTime = millis();
 
@@ -37,7 +68,7 @@ void trigger_motorAtStart() {
     // A) signal to the main process (during resetting)
     // B) signal that a motor that is being monitored has hit its zero position
     if (startTriggerDebounce <= currentTime - DEBOUNCE_WAIT_TIME) {
-      unattachLoopListener();
+      unattachLoopListener(board);
       loopDetected();
     }
   
@@ -46,12 +77,18 @@ void trigger_motorAtStart() {
 }
 
 void reduceLoopCount(int board, int motor, int targetIndex) {
+//  Serial.print("reduceLoopCount: ");
+//  Serial.print(board);
+//  Serial.print(", ");
+//  Serial.println(motor);
   loopResetCount[board][motor] = loopResetCount[board][motor] - 1;
+  
+  totalLoops++;
 
   if (loopResetCount[board][motor] <= 0) {
     bool detecting = setDetectingLoop(board, motor, targetIndex);
     if (detecting) {
-      attachLoopListener();
+      attachLoopListener(board, motor);
       updateButtonRegister(board, motor);
     } else {
       // another loop was already being detected, detect this loop the next time around

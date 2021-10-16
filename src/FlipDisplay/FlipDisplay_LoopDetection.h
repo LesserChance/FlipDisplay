@@ -15,23 +15,26 @@ void setupLoopDetection();
 /**
  * The interrupt will always trigger, but only update data if this is attached - attach it
  */
-void attachLoopListener();
+void attachLoopListener(int board, int motor);
 
 /**
  * The interrupt will always trigger, but only update data if this is attached - unattach it
  */
-void unattachLoopListener();
+void unattachLoopListener(int board);
 
 /**
  * return if the listener is attached
  */
-bool isLoopListenerAttached();
+bool isLoopListenerAttached(int board);
+
+void trigger_motorAtStart0();
+void trigger_motorAtStart1();
 
 /**
  * This trigger is an bound to an interrupt pin, it will interrupt currently executing code
  * when a motor that is being monitored hits it starts position
  */
-void trigger_motorAtStart();
+void trigger_motorAtStart(int board);
 
 /**
  * The current movement of this motor will cause it to pass the start position
