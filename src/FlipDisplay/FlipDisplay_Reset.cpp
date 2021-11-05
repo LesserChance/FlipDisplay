@@ -13,121 +13,93 @@ void queueReset(int delayBeforeReset) {
 
 void resetAll() {
   Serial.println("-- RESETTING DISPLAY --");  
+
+  // first step, move past the button one by one
+  reset_getPastButtons();
+
+  // second step, move to the button all at once
+  reset_moveToButtons();
+
+  // third step: advance more to match the starting offset
+  reset_moveToStartPosition();
+}
+
+void reset_getPastButtons() {
   for (int board = 0; board < BOARD_COUNT; board++) {
     for (int motor = 0; motor < MOTOR_COUNT; motor++) {
-      resetMotor(board, motor);
+      updateButtonRegister(board, motor);
+      writeRegisters();
+      
+      while (!isButtonTriggered(board)) {
+        stepMotor(board, motor);
+        writeRegisters();
+      }
+
+      pauseMotor(board, motor);
+      resetButtonRegister(board);
     }
   }
-
-  // all motors should be set as paused, and no longer listening for button presses
-  writeRegisters();
 }
 
-void resetMotor(int board, int motor) {
-  // output high on the correct button register
-  updateButtonRegister(board, motor);
-  
-  // all registers besides this one should get paused
-  for (int i = 0; i < BOARD_COUNT; i++) {
-    for (int j = 0; j < MOTOR_COUNT; j++) {
-      if (i != board && j != motor) {
+void reset_moveToButtons() {
+  for (int board = 0; board < BOARD_COUNT; board++) {
+    bool allMotorsDone = false;
+    bool motorsDone[MOTOR_COUNT];
+    for (int motor = 0; motor < MOTOR_COUNT; motor++) {
+      motorsDone[motor] = false;
+    }
+
+    while (!allMotorsDone) {
+      // pause all the motors while looping through buttons
+      for (int motor = 0; motor < MOTOR_COUNT; motor++) {
         pauseMotor(board, motor);
       }
-    }
-  }
-  
-  // write registers to output the button data before reading
-  writeRegisters();
-  // delay(2);
 
-  // run the motor reset
-  resetMotorPosition(board, motor);
-}
+      // check if the button is pushed on each motor
+      int motorsDoneCount = 0;
+      for (int motor = 0; motor < MOTOR_COUNT; motor++) {
+        if (motorsDone[motor]) {
+          motorsDoneCount++;
+        } else {
+          updateButtonRegister(board, motor);
+          writeRegistersWithDelay(1);
 
-//void resetAllNew() {
-//  for (int board = 0; board < BOARD_COUNT; board++) {
-//    // get past the button
-//    stepMotorsToValue(board, LOW);
-//    // get to the button
-//    stepMotorsToValue(board, HIGH);
-//  }
-//
-//  // all motors should be set as paused, and no longer listening for button presses
-//  writeRegisters();
-//}
+          if (!isButtonTriggered(board)) {
+            motorsDone[motor] = true;
+          }
+        }
+      }
 
-//void stepMotorsToValue(int board, int buttonVal) {
-//  bool allMotorsDone = false;
-//  bool motorsDone[MOTOR_COUNT] = {false, false, false, false};
-//  byte bugRegs[4] = {B10000000,B01000000,B00100000,B00010000};
-//    
-//  while (!allMotorsDone) {
-//    for (int motor = 0; motor < MOTOR_COUNT; motor++) {
-//      //step all motors
-//      if (!motorsDone[motor]) {
-//        stepMotor(board, motor);
-//      }
-//    }
-//
-//    // move the motors
-//    writeRegisters();
-//    
-//    // rotate through buttons and read for start
-//    int motorsDoneCount = 0;
-//    for (int motor = 0; motor < MOTOR_COUNT; motor++) {
-//      if (!motorsDone[motor]) {
-//        startButtonRegisterOutput[board] = bugRegs[motor];
-//        writeRegistersNow();
-//        delay(1);
-//  
-//        if (digitalRead(MOTOR_START_PIN) == buttonVal) {
-//          Serial.print("MOTOR DONE: ");
-//          Serial.println(motor);
-//          motorsDone[motor] = true;
-//        }
-//
-//        // dont send additional instructuons this loop
-//        pauseMotor(board, motor);
-//      } else {
-//        motorsDoneCount++;
-//      }
-//    }
-//
-//    allMotorsDone = (motorsDoneCount == MOTOR_COUNT);
-//  }
-//}
-
-/**
- * Send the specified motor to its starting position
- */
-void resetMotorPosition(int board, int motor) {
-  // always move a couple steps to get past a button (assuming we started on one)
-  if (!isButtonTriggered(board)) {
-    for (int i = getStepsPerCharacter(board, motor) * 5; i > 0; i--) {
-      stepMotor(board, motor);
+      allMotorsDone = (motorsDoneCount == MOTOR_COUNT);
+      
+      // step all the moving motors on this board
+      for (int motor = 0; motor < MOTOR_COUNT; motor++) {
+        if (!motorsDone[motor]) {
+          stepMotor(board, motor);
+        }
+      }
+      
       writeRegisters();
     }
   }
+}
 
-  // loop listener will be unattached through an interrupt once the start position is reached
-  attachLoopListener(board, motor);
-  while (isLoopListenerAttached(board)) {
-    stepMotor(board, motor);
-    writeRegisters();
+void reset_moveToStartPosition() {
+  for (int board = 0; board < BOARD_COUNT; board++) {
+    for (int motor = 0; motor < MOTOR_COUNT; motor++) {
+      for (int i = CHARACTER_OFFSET[board][motor]; i > 0; i--) {
+        stepMotor(board, motor);
+        writeRegisters();
+      }
+
+      // reset the current character
+      storeCurrentCharacter(board, motor, 0);
+
+      // pause the motor
+      pauseMotor(board, motor);
+    }
+
+    // reset the start button register to no longer listen
+    resetButtonRegister(board);
   }
-
-  // advance more to match the starting offset
-  for (int i = CHARACTER_OFFSET[board][motor]; i > 0; i--) {
-    stepMotor(board, motor);
-    writeRegisters();
-  }
-
-  // reset the current character
-  storeCurrentCharacter(board, motor, 0);
-
-  // pause the motor
-  pauseMotor(board, motor);
-
-  // reset the start button register to no longer listen
-  resetButtonRegister(board);
 }

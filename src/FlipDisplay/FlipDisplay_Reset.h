@@ -19,13 +19,18 @@ void queueReset(int delayBeforeReset);
 void resetAll();
 
 /**
- * reset a single motors to its starting position
+ * first step, move past the button one by one
  */
-void resetMotor(int board, int motor);
+void reset_getPastButtons();
 
 /**
- * Send the specified motor to its starting position
+ * second step, move to the button all at once
  */
-void resetMotorPosition(int board, int motor);
+void reset_moveToButtons();
+
+/**
+ * third step: advance more to match the starting offset
+ */
+void reset_moveToStartPosition();
 
 #endif

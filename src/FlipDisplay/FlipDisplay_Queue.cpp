@@ -70,6 +70,10 @@ void executeNextInstruction() {
     }
   } else if (!isReset) {
     // there are no instructions queued, we can queue up a reset after some delay, but let other instructions interrupt that
+    // todo: this isnt a great way of allowing interrupts to happen, we should be able to set this 30s in the future
+    // and still have other instructions occur (then just delay that by 30s) - maybe, if we add an instruction with a 0 delay it
+    // just jumps the queue, then, we could just do queueReset(3000); and other interrupts would still trigger - no need 
+    // for time math here!
     if (nextResetTime == 0) {
       Serial.println("NO INSTRUCTIONS, WAITING TO RESET");
       nextResetTime = currentTime + WORD_PAUSE_TIME;

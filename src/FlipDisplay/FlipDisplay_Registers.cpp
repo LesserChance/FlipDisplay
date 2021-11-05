@@ -116,35 +116,12 @@ void updateMotorRegister(int board, int motor) {
   motorRegisterOutput[board][motorRegister[motor]] = currentOutput;
 }
 
-//void writeRegisters() {
-//  int board = 0;
-//  for (int board = 0; board < BOARD_COUNT; board++) {
-//    // enable this board
-//    enableBoard(board);
-//    
-//    // SR2: bits 0-3: button read
-//    // SR1: bits 0-3: motor 2, bits 4-7: motor 3
-//    // SR0: bits 0-3: motor 0, bits 4-7: motor 1
-//    if (board == 0) {
-//      printBinary(motorRegisterOutput[board][0]);
-//    }
-//
-//    digitalWrite(MOTOR_SR_LATCH_PIN, LOW); //RCLK
-//    shiftOut(MOTOR_SR_DATA_PIN, MOTOR_SR_CLOCK_PIN, LSBFIRST, startButtonRegisterOutput[board]); // SR2
-//    shiftOut(MOTOR_SR_DATA_PIN, MOTOR_SR_CLOCK_PIN, LSBFIRST, motorRegisterOutput[board][1]);    // SR1
-//    shiftOut(MOTOR_SR_DATA_PIN, MOTOR_SR_CLOCK_PIN, LSBFIRST, motorRegisterOutput[board][0]);    // SR0
-//    digitalWrite(MOTOR_SR_LATCH_PIN, HIGH);
-//
-//    // if I delay here, I can make it work just fine, but itll slow down with every SR I add
-//    delay(2);
-//  }
-//
-//  // delay here works fine with only one SR
-////  delay(DELAY_AMT);
-//}
-
 // this version is setup where all SRs are chained
 void writeRegisters() {
+  writeRegistersWithDelay(DELAY_AMT);
+}
+
+void writeRegistersWithDelay(int delayAmt) {
   digitalWrite(MOTOR_SR_LATCH_PIN, LOW); //RCLK
   
   for (int board = BOARD_COUNT - 1; board >= 0; board--) {
@@ -154,9 +131,7 @@ void writeRegisters() {
   }
   digitalWrite(MOTOR_SR_LATCH_PIN, HIGH);
 
-  delayMicroseconds(DELAY_AMT);
-//  delayMicroseconds(1500); // works!
-//  delayMicroseconds(1400); // works!
+  delayMicroseconds(delayAmt);
 }
 
 void disableBoard(int board) {

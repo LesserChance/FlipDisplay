@@ -19,7 +19,7 @@ const int CHAR_COUNT = 40;
 const int PHASE_COUNT = 4; 
 
 // how many microseconds to delay after writing to the registers during normal operation
-const int DELAY_AMT = 2000;
+const int DELAY_AMT = 1900;
 
 // how many milliseconds to wait to debounce the start trigger button
 const int DEBOUNCE_WAIT_TIME = 10;
@@ -34,7 +34,7 @@ const int STEPS_PER_CHAR = 102;
 const int CATCH_UP_STEPS = STEPS_PER_LOOP - (STEPS_PER_CHAR * CHAR_COUNT);
 
 // some motors dont start at the blank tile perfectly, how many more steps should they step to hit it perfectly
-const int CHARACTER_OFFSET[BOARD_COUNT][MOTOR_COUNT] = {{38, 138, 157, 58}};
+const int CHARACTER_OFFSET[BOARD_COUNT][MOTOR_COUNT] = {{38, 138, 156, 58}};
 
 // how many loops should be allowed before resetting the zero position - higher makes it less likely for collisions
 const int LOOP_RESET_THRESHOLD = 2;

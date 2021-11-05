@@ -16,7 +16,7 @@ String getTime() {
     return "";
   }
   
-  sprintf(currentTimeString, "%02d%02d", timeinfo.tm_hour, timeinfo.tm_min);
+  sprintf(currentTimeString, "%02d%02d", timeinfo.tm_hour % 12, timeinfo.tm_min);
 
   return String(currentTimeString);
 }

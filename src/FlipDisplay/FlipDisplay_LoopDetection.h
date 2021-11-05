@@ -57,6 +57,5 @@ bool setDetectingLoop(int board, int motor, int targetIndex);
  * this allows for slight differences in total steps per cycle
  */
 void loopDetected();
-void loopDetected2();
 
 #endif

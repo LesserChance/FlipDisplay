@@ -51,9 +51,14 @@ void setButtonRegister(int board, byte data);
 void updateMotorRegister(int board, int motor);
 
 /**
- * output the current data to the shift registers
+ * output the current data to the shift registers, using the default delay amount
  */
 void writeRegisters();
+
+/**
+ * output the current data to the shift registers
+ */
+void writeRegistersWithDelay(int delayAmt);
 
 void disableBoard(int board);
 void enableBoard(int board);
