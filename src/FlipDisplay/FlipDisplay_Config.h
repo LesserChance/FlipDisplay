@@ -34,10 +34,16 @@ const int STEPS_PER_CHAR = 102;
 const int CATCH_UP_STEPS = STEPS_PER_LOOP - (STEPS_PER_CHAR * CHAR_COUNT);
 
 // some motors dont start at the blank tile perfectly, how many more steps should they step to hit it perfectly
-const int CHARACTER_OFFSET[BOARD_COUNT][MOTOR_COUNT] = {{38, 140, 166, 58}};
+const int CHARACTER_OFFSET[BOARD_COUNT][MOTOR_COUNT] = {{38, 138, 157, 58}};
 
 // how many loops should be allowed before resetting the zero position - higher makes it less likely for collisions
 const int LOOP_RESET_THRESHOLD = 2;
+
+// how long to stay on a word
+const int WORD_PAUSE_TIME = 30000;
+
+// how many hours to offset GMT Timezone
+const int GMT_OFFSET = -4;
 
 // when updating board count these need to be updated
 const int MOTOR_LOOP_PIN[BOARD_COUNT] = {23};  // pull low with a 220 resistor on the main board {23, 4}

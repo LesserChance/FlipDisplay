@@ -172,22 +172,3 @@ void enableBoard(int board) {
 //    }
 //  }
 }
-
-//void writeRegistersNow() {
-//  for (int board = 0; board < BOARD_COUNT; board++) {
-//    // enable this board
-//    // TODO
-//    
-//    // SR2: bits 0-3: button read
-//    // SR1: bits 0-3: motor 2, bits 4-7: motor 3
-//    // SR0: bits 0-3: motor 0, bits 4-7: motor 1
-//    digitalWrite(MOTOR_SR_LATCH_PIN, LOW);
-//    shiftOut(MOTOR_SR_DATA_PIN, MOTOR_SR_CLOCK_PIN, LSBFIRST, startButtonRegisterOutput[board]); // SR2
-//    shiftOut(MOTOR_SR_DATA_PIN, MOTOR_SR_CLOCK_PIN, LSBFIRST, motorRegisterOutput[board][1]);    // SR1
-//    shiftOut(MOTOR_SR_DATA_PIN, MOTOR_SR_CLOCK_PIN, LSBFIRST, motorRegisterOutput[board][0]);    // SR0
-//    digitalWrite(MOTOR_SR_LATCH_PIN, HIGH);
-//
-//    // disable this board
-//    // TODO
-//  }
-//}

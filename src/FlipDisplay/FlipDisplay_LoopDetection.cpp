@@ -27,11 +27,11 @@ void setupLoopDetection() {
 }
 
 void attachLoopListener(int board, int motor) {
-//  Serial.println("waiting to loop");
-//  Serial.print("board:");
-//  Serial.println(board);
-//  Serial.print("motor:");
-//  Serial.println(motor);
+  Serial.println("waiting to loop");
+  Serial.print("board:");
+  Serial.println(board);
+  Serial.print("motor:");
+  Serial.println(motor);
   listenForStartTrigger[board] = true;
   triggerMotor[board] = motor;
 }
@@ -55,11 +55,11 @@ void trigger_motorAtStart1() {
 
 void trigger_motorAtStart(int board) {
   if (isLoopListenerAttached(board) && isButtonTriggered(board)) {
-//    Serial.println("trigger_motorAtStart");
-//    Serial.print("board: ");
-//    Serial.println(board);
-//    Serial.print("motor: ");
-//    Serial.println(triggerMotor[board]);
+    Serial.println("trigger_motorAtStart");
+    Serial.print("board: ");
+    Serial.println(board);
+    Serial.print("motor: ");
+    Serial.println(triggerMotor[board]);
     
     // a motor we were listening to has hit its start position
     unsigned long currentTime = millis();
@@ -111,6 +111,7 @@ bool setDetectingLoop(int board, int motor, int targetIndex) {
 }
 
 void loopDetected() {
+  Serial.println("loopDetected");
   if (detectingLoop[0] == -1) {
     // ignore, we arent detecting a loop
     return;
@@ -119,6 +120,11 @@ void loopDetected() {
   int board = detectingLoop[0];
   int motor = detectingLoop[1];
   int targetIndex = detectingLoop[2];
+  
+  Serial.print("loopDetected: ");
+  Serial.print(board);
+  Serial.print(", ");
+  Serial.println(motor);
   
   // stop detecting a loop
   setDetectingLoop(-1, -1, -1);
@@ -137,4 +143,15 @@ void loopDetected() {
 
   // reset the start button register to no longer listen
   resetButtonRegister(board);
+
+  // delay to examine current state
+//  Serial.println("curr string: ");
+//  for (int board = 0; board < BOARD_COUNT; board++) {
+//    for (int motor = 0; motor < MOTOR_COUNT; motor++) {
+//      Serial.print(CHARACTERS[currentCharacter[board][motor]]);
+//    }
+//  }
+//  Serial.println("");
+//  delay(10000);
+  
 }

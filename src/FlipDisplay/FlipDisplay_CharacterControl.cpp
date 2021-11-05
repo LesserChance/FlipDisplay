@@ -38,10 +38,18 @@ void setDisplayString(String newString) {
 }
 
 void setCharacter(int board, int motor, char character) {
+  // character substituions
+  if (character == '0') {
+    character = 'O';
+  }
+  if (character == '1') {
+    character = 'I';
+  }
+
   int newCharPos = CHARACTERS.indexOf(character);
   if (newCharPos == -1) {
-    character = ' ';
-    newCharPos = 0;
+    character = '.';
+    newCharPos = CHARACTERS.indexOf(character);
   }
   
   remainingSteps[board][motor] = getCharDistance(board, motor, character);

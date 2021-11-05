@@ -3,6 +3,7 @@
 #include "FlipDisplay_Queue.h"
 #include "FlipDisplay_Registers.h"
 #include "FlipDisplay_Reset.h"
+#include "FlipDisplay_Time.h"
 #include "FlipDisplay_LoopDetection.h"
 #include "FlipDisplay_Wifi.h"
 
@@ -14,7 +15,7 @@ volatile unsigned long startButtonDebounce = 0;
 
 // put your favorite four-letter words here
 const int WORD_COUNT = 1;
-String words[WORD_COUNT] = {"test"};
+String words[WORD_COUNT] = {"poop"};
 
 void setup() {
   Serial.begin(115200);
@@ -25,14 +26,15 @@ void setup() {
 
   attachInterrupt(digitalPinToInterrupt(13), trigger_Word, FALLING);
   
-//  connectWifi();
+  connectWifi();
+  setTimeByNTP();
   setupCharacterControl();
   setupRegisters();
   setupLoopDetection();
 
   // set the motors to a known position
   resetAll();
-// resetAllNew(); // this worked in 25s vs 32s for resetAll, but its fickle -- need to figure out how to make sure we start past the button
+  // resetAllNew(); // this worked in 25s vs 32s for resetAll, but its fickle -- need to figure out how to make sure we start past the button
 }
 
 void trigger_Word() {
@@ -40,18 +42,8 @@ void trigger_Word() {
   unsigned long currentTime = millis();
   if (currentTime > nextTrigger) {
     // choose a random word and queue its display
-    String instructionArgs[1] = {words[random(0, WORD_COUNT - 1)]};
+    String instructionArgs[1] = {words[random(0, WORD_COUNT)]};
     addInstruction(0, INSTRUCTION_SET_DISPLAY, instructionArgs);
-
-    // after the word has been displayed for 10 seconds, go to "...." then reset the motors (allows for better parallelization)
-    String ellipse = "";
-    for (int i = 0; i < BOARD_COUNT * MOTOR_COUNT; i++) {
-      ellipse += ".";
-    }
-    
-    instructionArgs[0] = ellipse;
-    addInstruction(10000, INSTRUCTION_SET_DISPLAY, instructionArgs);
-    addInstruction(0, INSTRUCTION_RESET_ALL, instructionArgs);
 
     // debounce the button
     nextTrigger = currentTime + 500;

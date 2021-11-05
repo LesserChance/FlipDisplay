@@ -1,5 +1,16 @@
 #include "FlipDisplay_Reset.h"
 
+void queueReset(int delayBeforeReset) {
+  String ellipse = "";
+  for (int i = 0; i < BOARD_COUNT * MOTOR_COUNT; i++) {
+    ellipse += ".";
+  }
+  
+  String instructionArgs[1] = {ellipse};
+  addInstruction(delayBeforeReset, INSTRUCTION_SET_DISPLAY, instructionArgs);
+  addInstruction(0, INSTRUCTION_RESET_ALL, instructionArgs);
+}
+
 void resetAll() {
   Serial.println("-- RESETTING DISPLAY --");  
   for (int board = 0; board < BOARD_COUNT; board++) {
@@ -16,9 +27,18 @@ void resetMotor(int board, int motor) {
   // output high on the correct button register
   updateButtonRegister(board, motor);
   
+  // all registers besides this one should get paused
+  for (int i = 0; i < BOARD_COUNT; i++) {
+    for (int j = 0; j < MOTOR_COUNT; j++) {
+      if (i != board && j != motor) {
+        pauseMotor(board, motor);
+      }
+    }
+  }
+  
   // write registers to output the button data before reading
   writeRegisters();
-  delay(2);
+  // delay(2);
 
   // run the motor reset
   resetMotorPosition(board, motor);
