@@ -143,15 +143,5 @@ void loopDetected() {
 
   // reset the start button register to no longer listen
   resetButtonRegister(board);
-
-  // delay to examine current state
-//  Serial.println("curr string: ");
-//  for (int board = 0; board < BOARD_COUNT; board++) {
-//    for (int motor = 0; motor < MOTOR_COUNT; motor++) {
-//      Serial.print(CHARACTERS[currentCharacter[board][motor]]);
-//    }
-//  }
-//  Serial.println("");
-//  delay(10000);
   
 }

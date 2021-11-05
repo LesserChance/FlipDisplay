@@ -1,13 +1,7 @@
 #include "FlipDisplay_Reset.h"
 
 void queueReset(int delayBeforeReset) {
-  String ellipse = "";
-  for (int i = 0; i < BOARD_COUNT * MOTOR_COUNT; i++) {
-    ellipse += ".";
-  }
-  
-  String instructionArgs[1] = {ellipse};
-  addInstruction(delayBeforeReset, INSTRUCTION_SET_DISPLAY, instructionArgs);
+  String instructionArgs[1] = {""};
   addInstruction(0, INSTRUCTION_RESET_ALL, instructionArgs);
 }
 

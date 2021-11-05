@@ -19,7 +19,7 @@ const int CHAR_COUNT = 40;
 const int PHASE_COUNT = 4; 
 
 // how many microseconds to delay after writing to the registers during normal operation
-const int DELAY_AMT = 1900;
+const int DELAY_AMT = 2000;
 
 // how many milliseconds to wait to debounce the start trigger button
 const int DEBOUNCE_WAIT_TIME = 10;
