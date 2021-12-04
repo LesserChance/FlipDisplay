@@ -10,7 +10,7 @@ FlipDisplay::FlipDisplay() {
     pinMode(CHAR_FIVE_BUTTON_PIN, INPUT);
     pinMode(CHAR_SIX_BUTTON_PIN, INPUT);
 
-    _characters[0] = new FlipDisplayCharacter(CHAR_ONE_BUTTON_PIN, 82);
+    _characters[0] = new FlipDisplayCharacter(CHAR_ONE_BUTTON_PIN, 80);
     _characters[1] = new FlipDisplayCharacter(CHAR_TWO_BUTTON_PIN, 78);
     _characters[2] = new FlipDisplayCharacter(CHAR_THREE_BUTTON_PIN, 110);
     _characters[3] = new FlipDisplayCharacter(CHAR_FIVE_BUTTON_PIN, 118);
@@ -57,9 +57,11 @@ void FlipDisplay::setDisplay(String displayString) {
     _currentDisplay = displayString;
     _currentDisplayScrollPosition = 0;
     
+#if DEBUG
     Serial.print("SETTING DISPLAY TO: ");
     Serial.println(_currentDisplay);
-    
+#endif
+
     lerpToCurrentDisplay();
 }
 

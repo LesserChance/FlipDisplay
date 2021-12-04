@@ -2,7 +2,6 @@
 
 #include "FlipDisplayLerp.h"
 
-
 unsigned long FlipDisplayLerp::getTimeToNextStep() {
     if (_totalDuration == 0) {
         // there were no steps, this is an error scenario

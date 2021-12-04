@@ -8,6 +8,8 @@
 #define AVG_STEP_DURATION 5000
 #define HOMING_STEP_DURATION 5000
 
+#define DEBUG 1
+
 class FlipDisplayLerp {
     public:
         static const int C_MIN_STEP_DURATION = MIN_STEP_DURATION;

@@ -65,7 +65,9 @@ int FlipDisplayCharacter::getStepsToChar(char targetChar) {
 void FlipDisplayCharacter::startLerp(FlipDisplayLerp lerp) {
     if (_state != FlipDisplayCharacterState::PAUSED && _state != FlipDisplayCharacterState::MOTOR_OFF) {
         // we can only start a lerp if we are paused
+#if DEBUG
         Serial.println("Tried to lerp unpaused character");
+#endif
         return;
     }
     // lerp.debug();

@@ -13,6 +13,8 @@
 #define STEPS_PER_CHARACTER 20
 #define PAUSE_ENABLED_DURATION 5000000 // 5 seconds
 
+#define DEBUG 1
+
 class FlipDisplayCharacter {
    public:
     typedef enum {

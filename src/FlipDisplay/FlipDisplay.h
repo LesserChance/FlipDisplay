@@ -19,6 +19,8 @@
 
 #define WAIT_TO_SCROLL 1000000 // 1 second
 
+#define DEBUG 1
+
 class FlipDisplay {
     public:
         typedef enum {
