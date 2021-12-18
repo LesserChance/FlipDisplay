@@ -4,11 +4,7 @@
 #include <Arduino.h>
 #include <stdint.h>
 
-#define MIN_STEP_DURATION 4000
-#define AVG_STEP_DURATION 5000
-#define HOMING_STEP_DURATION 5000
-
-#define DEBUG 1
+#include "Config.h"
 
 class FlipDisplayLerp {
     public:

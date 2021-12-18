@@ -5,21 +5,9 @@
 #include <stdint.h>
 #include <string.h>
 
+#include "Config.h"
 #include "FlipDisplayCharacter.h"
 #include "FlipDisplayLerp.h"
-
-#define CHARACTER_COUNT 5  // how many charcters will the animations control
-
-#define CHAR_ONE_BUTTON_PIN    35
-#define CHAR_TWO_BUTTON_PIN    32
-#define CHAR_THREE_BUTTON_PIN  33
-#define CHAR_FOUR_BUTTON_PIN   25
-#define CHAR_FIVE_BUTTON_PIN   26
-#define CHAR_SIX_BUTTON_PIN    27
-
-#define WAIT_TO_SCROLL 1000000 // 1 second
-
-#define DEBUG 1
 
 class FlipDisplay {
     public:
@@ -44,6 +32,14 @@ class FlipDisplay {
         
         int _currentDisplayScrollPosition;
         unsigned long _nextScrollTime;
+
+        bool _isHoming = false;
+        
+        byte _lastStepPinRegisterOutput = 0b00000000;
+        byte _buttonRegisterInput = 0b00000000;
+
+        void readInButtonRegister();
+        void updateRegisters();
 
         void checkForScroll();
         void lerpToCurrentDisplay();
