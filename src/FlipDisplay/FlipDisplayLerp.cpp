@@ -68,16 +68,16 @@ void FlipDisplayLerp::setDelay(unsigned long delay) {
 
 void FlipDisplayLerp::debug() {
     Serial.println("LERP:");
-    Serial.print("_type:");
-    Serial.println(_type);
+    // Serial.print("_type:");
+    // Serial.println(_type);
     Serial.print("_totalDuration:");
     Serial.println(_totalDuration);
-    Serial.print("_totalSteps:");
-    Serial.println(_totalSteps);
-    Serial.print("_pointer:");
-    Serial.println(_pointer);
-    Serial.print("_scale:");
-    Serial.println(_scale);
+    // Serial.print("_totalSteps:");
+    // Serial.println(_totalSteps);
+    // Serial.print("_pointer:");
+    // Serial.println(_pointer);
+    // Serial.print("_scale:");
+    // Serial.println(_scale);
 }
 
 void FlipDisplayLerp::setDuration(unsigned long duration) {

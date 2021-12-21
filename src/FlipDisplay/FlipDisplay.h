@@ -1,5 +1,5 @@
-#ifndef FlipDisplayAnimation_h
-#define FlipDisplayAnimation_h
+#ifndef FlipDisplay_h
+#define FlipDisplay_h
 
 #include <Arduino.h>
 #include <stdint.h>

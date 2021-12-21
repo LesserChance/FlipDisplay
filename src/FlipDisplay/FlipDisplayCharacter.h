@@ -51,6 +51,7 @@ class FlipDisplayCharacter {
     unsigned long _pausedTime;    // the time the character started being paused
 
     uint8_t _buttonPinValue;      // value read from the button pin
+    uint8_t _prevButtonPinValue;  // value read from the button pin on the last run loop
     uint8_t _stepPinValue;        // value to output to the step pin
     uint8_t _enablePinValue;      // value to output to the enable pin (LOW is ENABLED)
     uint8_t _startOffset;         // how far to offset from the button state change to reach the start point (steps)
@@ -60,6 +61,7 @@ class FlipDisplayCharacter {
     FlipDisplayLerp _lerp;        // the currently executing lerp    
 
     void runToButtonState(uint8_t targetButtonState);
+    void detectLoop();
     void stepOnTime();
     void calculateNextStepTime();
     void setTargetPosition(int steps);

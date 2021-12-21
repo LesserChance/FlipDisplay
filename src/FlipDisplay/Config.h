@@ -4,6 +4,7 @@
 #include <Arduino.h>
 
 #define DEBUG 1
+#define SERVER_ENABLED 1
 
 #define loopPin1 2
 #define loopPin2 5
@@ -22,12 +23,13 @@
 // #define TEST_PIN_ONE 5          // trigger lerp (yellow)
 // #define TEST_PIN_TWO 2         // trigger home (green)
 
-#define TOTAL_CHARACTERS 6  // the total number of characters we're able to control
-#define CHARACTER_COUNT 6   // how many characters will the animations actually control (out of total)
+#define TOTAL_CHARACTERS 6                 // the total number of characters we're able to control
+#define START_CHARACTER 0                  // which index is the first character (allows you to test just characters at the end)
+#define CHARACTER_COUNT 6                  // how many characters will the animations actually control (out of total)
 
-#define MIN_STEP_DURATION 2000    // time between steps when moving as fast as possible
-#define AVG_STEP_DURATION 2500    // time between steps for an average running speed
-#define HOMING_STEP_DURATION 3000 // time between steps when homing
+#define MIN_STEP_DURATION 1800             // time between steps when moving as fast as possible
+#define AVG_STEP_DURATION 2300             // time between steps for an average running speed
+#define HOMING_STEP_DURATION 3000          // time between steps when homing
 
 #define DEBOUNCE_DURATION 50000            // how long to wait (microseconds) to debounce the loop button
 #define STEPS_PER_REVOLUTION 800           // total numbers of steps to make a full rotation
@@ -35,12 +37,12 @@
 #define STEPS_PER_CHARACTER 20             // how many steps to step a single character
 #define PAUSE_ENABLED_DURATION 1000000 * 5 // how long to wait (microseconds) before disabling the motor entirely when paused
 
-#define SCROLLING_ENABLED 1        // should the display scroll for strings that are too large?
-#define WAIT_TO_SCROLL 1000000 * 1 // how long should we pause until we scroll to the next set of characters
-#define CHARS_TO_SCROLL 3          // how many characters should scroll at a time
+#define SCROLLING_ENABLED 1                // should the display scroll for strings that are too large?
+#define WAIT_TO_SCROLL 1000000 * 1         // how long should we pause until we scroll to the next set of characters
+#define CHARS_TO_SCROLL 3                  // how many characters should scroll at a time
 
 const int STEP_PIN[TOTAL_CHARACTERS] = {stepPin1, stepPin2, stepPin3, stepPin4, stepPin5, stepPin6};
 const int LOOP_PIN[TOTAL_CHARACTERS] = {loopPin1, loopPin2, loopPin3, loopPin4, loopPin5, loopPin6};
-const int CHARACTER_OFFSET[TOTAL_CHARACTERS] = {20,0,32,25,10,5};
+const int CHARACTER_OFFSET[TOTAL_CHARACTERS] = {88,80,109,78,74,74};
 
 #endif

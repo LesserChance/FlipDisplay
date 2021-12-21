@@ -3,7 +3,7 @@
 #include "FlipDisplay.h"
 
 FlipDisplay::FlipDisplay() {
-    for (int i = 0; i < CHARACTER_COUNT; i++) {
+    for (int i = START_CHARACTER; i < CHARACTER_COUNT; i++) {
         _characters[i] = new FlipDisplayCharacter(i, CHARACTER_OFFSET[i]);
     }
 
@@ -24,7 +24,7 @@ void FlipDisplay::home() {
     _isHoming = true;
     readInButtonRegister();
     
-    for (int i = 0; i < CHARACTER_COUNT; i++) {
+    for (int i = START_CHARACTER; i < CHARACTER_COUNT; i++) {
         uint8_t buttonState = !bitRead(_buttonRegisterInput, i);
         _characters[i]->setButtonState(buttonState);
         _characters[i]->home();
@@ -38,7 +38,7 @@ void FlipDisplay::run() {
     checkForScroll();
 
     int pauseCount = 0;
-    for (int i = 0; i < CHARACTER_COUNT; i++) {
+    for (int i = START_CHARACTER; i < CHARACTER_COUNT; i++) {
         FlipDisplayCharacter::FlipDisplayCharacterState characterState = _characters[i]->run();
 
         switch (characterState) {
@@ -69,25 +69,25 @@ void FlipDisplay::updateRegisters() {
     if (_lastStepPinRegisterOutput != stepPinRegisterOutput) {
         _lastStepPinRegisterOutput = stepPinRegisterOutput;
 
-        for (int i = 0; i < CHARACTER_COUNT; i++) {
+        for (int i = START_CHARACTER; i < CHARACTER_COUNT; i++) {
             digitalWrite(STEP_PIN[i], bitRead(stepPinRegisterOutput, i));
         }
             
-        if (_isHoming) {
+        // if (_isHoming) {
             readInButtonRegister();
             
-            for (int i = 0; i < CHARACTER_COUNT; i++) {
+            for (int i = START_CHARACTER; i < CHARACTER_COUNT; i++) {
                 uint8_t buttonState = !bitRead(_buttonRegisterInput, i);
                 _characters[i]->debounceButtonState(buttonState);
             }
-        }
+        // }
     }
 }
 
 void FlipDisplay::readInButtonRegister() {
     _buttonRegisterInput = 0b0000000;
 
-    for (int i = 0; i < CHARACTER_COUNT; i++) {
+    for (int i = START_CHARACTER; i < CHARACTER_COUNT; i++) {
         bitWrite(_buttonRegisterInput, i, digitalRead(LOOP_PIN[i]));
     }
 }
@@ -98,7 +98,12 @@ void FlipDisplay::checkForScroll() {
 
 #if DEBUG
     Serial.print("SCROLLING TO POSITION: ");
-    Serial.println(_currentDisplayScrollPosition);
+    Serial.print(_currentDisplayScrollPosition);
+
+    String displayString = _currentDisplay.substring(_currentDisplayScrollPosition, _currentDisplayScrollPosition + CHARACTER_COUNT);
+    Serial.print(" (");
+    Serial.print(displayString);
+    Serial.println(")");
 #endif
 
         lerpToCurrentDisplay();
@@ -107,7 +112,7 @@ void FlipDisplay::checkForScroll() {
 
 byte FlipDisplay::getRegisterOutput() {
     byte stepPinRegisterOutput = 0b00000000;
-    for (int i = 0; i < CHARACTER_COUNT; i++) {
+    for (int i = START_CHARACTER; i < CHARACTER_COUNT; i++) {
         bitWrite(stepPinRegisterOutput, i, _characters[i]->getStepPinValue());
     }
 
@@ -132,9 +137,10 @@ void FlipDisplay::lerpToCurrentDisplay() {
 
     FlipDisplayLerp lerps[CHARACTER_COUNT];
 
-    for (int i = 0; i < CHARACTER_COUNT; i++) {
+    for (int i = START_CHARACTER; i < CHARACTER_COUNT; i++) {
         char displayChar = (displayString.length() > i) ? displayString[i] : ' ';
-        lerps[i] = FlipDisplayLerp(_characters[i]->getStepsToChar(displayChar), FlipDisplayLerp::LerpType::FLAT);
+        // lerps[i] = FlipDisplayLerp(_characters[i]->getStepsToChar(displayChar), FlipDisplayLerp::LerpType::FLAT);
+        lerps[i] = FlipDisplayLerp(_characters[i]->getStepsToChar(displayChar), FlipDisplayLerp::LerpType::LINEAR_SLOW_DOWN);
     }
     
     unsigned long maxDuration = FlipDisplayLerp::getMaxDuration(lerps, CHARACTER_COUNT);
@@ -142,7 +148,7 @@ void FlipDisplay::lerpToCurrentDisplay() {
     // mutate the lerps based on the animation type
     switch(_type) {
         case AnimationType::ARRIVE_TOGETHER:
-            for (int i = 0; i < CHARACTER_COUNT; i++) {
+            for (int i = START_CHARACTER; i < CHARACTER_COUNT; i++) {
                 lerps[i].setDelay(maxDuration - lerps[i].getTotalDuration());
             }
             break;
@@ -152,7 +158,7 @@ void FlipDisplay::lerpToCurrentDisplay() {
             break;
     }
     
-    for (int i = 0; i < CHARACTER_COUNT; i++) {
+    for (int i = START_CHARACTER; i < CHARACTER_COUNT; i++) {
         _characters[i]->startLerp(lerps[i]);
     }
 
