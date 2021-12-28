@@ -2,9 +2,31 @@
 
 #include "FlipDisplayCharacter.h"
 
-/**
- * PUBLIC
- */
+/*************************************
+ * CONSTRUCTOR
+ *************************************/
+
+FlipDisplayCharacter::FlipDisplayCharacter(int characterIndex,
+                                           uint8_t startOffset) {
+    _state = FlipDisplayCharacterState::MOTOR_OFF;
+    _phase = LOW;
+
+    _characterIndex = characterIndex;
+    _currentPosition = 0;
+    _targetPosition = -1;
+    _debounceStart = 0;
+
+    _startOffset = startOffset;
+    _nextStepTime = 0;
+
+    _stepPinValue = LOW;
+    _buttonPinValue = LOW;
+    _prevButtonPinValue = LOW;
+}
+
+/*************************************
+ * PRIVATE
+ *************************************/
 
 FlipDisplayCharacter::FlipDisplayCharacterState FlipDisplayCharacter::run() {
     _currentTime = micros();
@@ -23,7 +45,8 @@ FlipDisplayCharacter::FlipDisplayCharacterState FlipDisplayCharacter::run() {
         case FlipDisplayCharacterState::HOMING_TO_OFFSET:
             stepOnTime();
             if (_state == FlipDisplayCharacterState::PAUSED) {
-                // since we're paused, that means we've moved the appropriate distance
+                // since we're paused, that means we've moved the appropriate
+                // distance
                 setCurrentPosition(0);
             }
             break;
@@ -48,38 +71,9 @@ FlipDisplayCharacter::FlipDisplayCharacterState FlipDisplayCharacter::run() {
     return _state;
 }
 
-void FlipDisplayCharacter::allowLoop() {
-    _allowLoop = true;
-}
-
-int FlipDisplayCharacter::getStepsToChar(char targetChar) {
-    if (targetChar == '1') {
-        targetChar = 'I';
-    }
-    if (targetChar == '0') {
-        targetChar = 'O';
-    }
-
-    int currentIndex = _currentPosition / STEPS_PER_CHARACTER;
-    int targetIndex = getCharPosition(targetChar);
-    int steps = ((POSSIBLE_CHARACTER_VALUES + (targetIndex - currentIndex)) % POSSIBLE_CHARACTER_VALUES) * STEPS_PER_CHARACTER;
-
-    if (targetIndex > currentIndex && _state == FlipDisplayCharacterState::MOTOR_OFF) {
-        // we need to ensure we do a full loop, since when the mototr goes off it could roll back a bit
-        // this will effectively re-home every character
-        steps = steps + STEPS_PER_REVOLUTION;
-    }
-
-    return steps;
-}
-
-
-int FlipDisplayCharacter::getCurrentOffsetFromButton() {
-    return _currentPosition + _startOffset;
-}
-
 void FlipDisplayCharacter::startLerp(FlipDisplayLerp lerp) {
-    if (_state != FlipDisplayCharacterState::PAUSED && _state != FlipDisplayCharacterState::MOTOR_OFF) {
+    if (_state != FlipDisplayCharacterState::PAUSED &&
+        _state != FlipDisplayCharacterState::MOTOR_OFF) {
         // we can only start a lerp if we are paused
 #if DEBUG_LERP
         Serial.println("Tried to lerp unpaused character");
@@ -104,10 +98,6 @@ void FlipDisplayCharacter::startLerp(FlipDisplayLerp lerp) {
     setTargetPosition(steps);
 }
 
-void FlipDisplayCharacter::setTargetPosition(int steps) {
-    _targetPosition = (_currentPosition + steps) % STEPS_PER_REVOLUTION;
-}
-
 void FlipDisplayCharacter::home() {
     _debounceStart = 0;
 
@@ -118,7 +108,7 @@ void FlipDisplayCharacter::home() {
         // currently past the button, so need to get to it
         _state = FlipDisplayCharacterState::HOMING_TO_BUTTON;
     }
-    
+
     _nextStepTime = 0;
 }
 
@@ -128,52 +118,79 @@ void FlipDisplayCharacter::pause() {
     _pausedTime = micros();
 }
 
-FlipDisplayCharacter::FlipDisplayCharacterState FlipDisplayCharacter::getState() {
-    return _state;
-}
-
-
-uint8_t FlipDisplayCharacter::getStepPinValue() {
-    return _stepPinValue;
-}
-
-void FlipDisplayCharacter::debounceButtonState(uint8_t value) {
-    if (_buttonPinValue != value) {
-        if (_debounceStart > 0 && _debounceStart + DEBOUNCE_DURATION <= _currentTime) {
-           setButtonState(value);
-            _debounceStart = 0;
-        } else if (_debounceStart == 0) {
-            _debounceStart = _currentTime;
-        }
-    }
-}
-void FlipDisplayCharacter::setButtonState(uint8_t value) {
-#if DEBUG_LOOP
-        Serial.print("CHAR ");
-        Serial.print(_characterIndex);
-        Serial.print(" => ");
-        Serial.println(value);
-#endif
-
-    _buttonPinValue = value;
-}
-
-/**
- * PRIVATE
- */
-
-void FlipDisplayCharacter::setCurrentPosition(int currentPosition) {
-    _currentPosition = currentPosition;
-}
-
 void FlipDisplayCharacter::step(int steps) {
-    if (_state == FlipDisplayCharacterState::PAUSED || _state == FlipDisplayCharacterState::MOTOR_OFF) {
+    if (_state == FlipDisplayCharacterState::PAUSED ||
+        _state == FlipDisplayCharacterState::MOTOR_OFF) {
         _state = FlipDisplayCharacterState::RUNNING;
     }
 
     setTargetPosition(steps);
 }
 
+void FlipDisplayCharacter::allowLoop() { _allowLoop = true; }
+
+void FlipDisplayCharacter::debounceButtonState(uint8_t value) {
+    if (_buttonPinValue != value) {
+        if (_debounceStart > 0 &&
+            _debounceStart + DEBOUNCE_DURATION <= _currentTime) {
+            setButtonState(value);
+            _debounceStart = 0;
+        } else if (_debounceStart == 0) {
+            _debounceStart = _currentTime;
+        }
+    }
+}
+
+void FlipDisplayCharacter::setButtonState(uint8_t value) {
+#if DEBUG_LOOP
+    Serial.print("CHAR ");
+    Serial.print(_characterIndex);
+    Serial.print(" => ");
+    Serial.println(value);
+#endif
+
+    _buttonPinValue = value;
+}
+
+FlipDisplayCharacter::FlipDisplayCharacterState
+FlipDisplayCharacter::getState() {
+    return _state;
+}
+
+uint8_t FlipDisplayCharacter::getStepPinValue() { return _stepPinValue; }
+
+int FlipDisplayCharacter::getStepsToChar(char targetChar) {
+    if (targetChar == '1') {
+        targetChar = 'I';
+    }
+    if (targetChar == '0') {
+        targetChar = 'O';
+    }
+
+    int currentIndex = _currentPosition / STEPS_PER_CHARACTER;
+    int targetIndex = getCharPosition(targetChar);
+    int steps = ((POSSIBLE_CHARACTER_VALUES + (targetIndex - currentIndex)) %
+                 POSSIBLE_CHARACTER_VALUES) *
+                STEPS_PER_CHARACTER;
+
+    if (targetIndex > currentIndex &&
+        _state == FlipDisplayCharacterState::MOTOR_OFF) {
+        // we need to ensure we do a full loop, since when the mototr goes off
+        // it could roll back a bit this will effectively re-home every
+        // character
+        steps = steps + STEPS_PER_REVOLUTION;
+    }
+
+    return steps;
+}
+
+int FlipDisplayCharacter::getCurrentOffsetFromButton() {
+    return _currentPosition + _startOffset;
+}
+
+/*************************************
+ * PUBLIC
+ *************************************/
 
 void FlipDisplayCharacter::runToButtonState(uint8_t targetButtonState) {
     if (_buttonPinValue != targetButtonState) {
@@ -207,21 +224,24 @@ void FlipDisplayCharacter::detectLoop() {
         Serial.print(", actual: ");
         Serial.print((STEPS_PER_REVOLUTION - _startOffset));
         Serial.print(", with offset: ");
-        Serial.print((STEPS_PER_REVOLUTION - _startOffset + LOOP_REVERSE_OFFSET));
+        Serial.print(
+            (STEPS_PER_REVOLUTION - _startOffset + LOOP_REVERSE_OFFSET));
         Serial.println(")");
 #endif
 
         // reset the current position
-        _currentPosition = (STEPS_PER_REVOLUTION - _startOffset + LOOP_REVERSE_OFFSET);
+        _currentPosition =
+            (STEPS_PER_REVOLUTION - _startOffset + LOOP_REVERSE_OFFSET);
     }
 }
 
 void FlipDisplayCharacter::stepOnTime() {
-    if (_state == FlipDisplayCharacterState::PAUSED || _state == FlipDisplayCharacterState::MOTOR_OFF) {
-         // this state should not be stepping
-         return;
+    if (_state == FlipDisplayCharacterState::PAUSED ||
+        _state == FlipDisplayCharacterState::MOTOR_OFF) {
+        // this state should not be stepping
+        return;
     }
-    
+
     bool checkForStep = true;
 
     if (_targetPosition != -1 && _currentPosition == _targetPosition) {
@@ -231,25 +251,26 @@ void FlipDisplayCharacter::stepOnTime() {
         if (_allowLoop) {
             // we're supposed to keep going but stop next time we hit it
             if (_currentTime >= _nextStepTime) {
-                // since this could happen mutliple times before we actually step, we need to wait until we know a step will happen
+                // since this could happen mutliple times before we actually
+                // step, we need to wait until we know a step will happen
                 _allowLoop = false;
                 checkForStep = true;
             }
         } else {
             // we are supposed to stop here
 #if DEBUG_LOOP
-        Serial.print("CHAR ");
-        Serial.print(_characterIndex);
-        Serial.print(" ARRIVED, _currentPosition: ");
-        Serial.print(_currentPosition);
-        Serial.print(", _targetPosition: ");
-        Serial.print(_targetPosition);
-        Serial.println(")");
+            Serial.print("CHAR ");
+            Serial.print(_characterIndex);
+            Serial.print(" ARRIVED, _currentPosition: ");
+            Serial.print(_currentPosition);
+            Serial.print(", _targetPosition: ");
+            Serial.print(_targetPosition);
+            Serial.println(")");
 #endif
             pause();
         }
     }
-    
+
     if (checkForStep && _currentTime >= _nextStepTime) {
         // we have waited at least the right amount of time, go ahead and step
         _phase = !_phase;
@@ -263,8 +284,9 @@ void FlipDisplayCharacter::calculateNextStepTime() {
     switch (_state) {
         case FlipDisplayCharacterState::RUNNING:
             if (_lerp.isComplete()) {
-                // we should be at our character, but we're not, keep going at the last speed
-                // this might happen if my lerp curves arent right or a loop reset the position
+                // we should be at our character, but we're not, keep going at
+                // the last speed this might happen if my lerp curves arent
+                // right or a loop reset the position
                 _nextStepTime = _currentTime + _lerp.getLastStepDuration();
             } else {
                 _nextStepTime = _currentTime + _lerp.getTimeToNextStep();
@@ -275,9 +297,18 @@ void FlipDisplayCharacter::calculateNextStepTime() {
         case FlipDisplayCharacterState::HOMING_TO_BUTTON:
         case FlipDisplayCharacterState::HOMING_TO_OFFSET:
             // just move at the standard rate
-            _nextStepTime = _currentTime + FlipDisplayLerp::C_HOMING_STEP_DURATION;
+            _nextStepTime =
+                _currentTime + FlipDisplayLerp::C_HOMING_STEP_DURATION;
             break;
     }
+}
+
+void FlipDisplayCharacter::setTargetPosition(int steps) {
+    _targetPosition = (_currentPosition + steps) % STEPS_PER_REVOLUTION;
+}
+
+void FlipDisplayCharacter::setCurrentPosition(int currentPosition) {
+    _currentPosition = currentPosition;
 }
 
 int FlipDisplayCharacter::getCharPosition(char targetChar) {
@@ -287,25 +318,4 @@ int FlipDisplayCharacter::getCharPosition(char targetChar) {
         }
     }
     return -1;
-}
-
-/**
- * CONSTRUCTOR
- */
-
-FlipDisplayCharacter::FlipDisplayCharacter(int characterIndex, uint8_t startOffset) {
-    _state = FlipDisplayCharacterState::MOTOR_OFF;
-    _phase = LOW;
-
-    _characterIndex = characterIndex;
-    _currentPosition = 0;
-    _targetPosition = -1;
-    _debounceStart = 0;
-
-    _startOffset = startOffset;
-    _nextStepTime = 0;
-    
-    _stepPinValue = LOW;
-    _buttonPinValue = LOW;
-    _prevButtonPinValue = LOW;
 }
