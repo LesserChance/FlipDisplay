@@ -8,7 +8,10 @@ FlipDisplay::FlipDisplay() {
         _characters[i] = new FlipDisplayCharacter(i, CHARACTER_OFFSET[i]);
     }
 
-    _type = AnimationType::CASCADE_RIGHT;
+    _setAnimationType = AnimationType::ARRIVE_TOGETHER;
+    _scrollAnimationType = AnimationType::CASCADE_RIGHT;
+    
+    _type = _setAnimationType;
 }
 
 void FlipDisplay::home() {
@@ -129,6 +132,7 @@ void FlipDisplay::checkForScroll() {
     Serial.println(")");
 #endif
 
+        setAnimationType(_scrollAnimationType);
         lerpToCurrentDisplay();
     }
 }
@@ -174,7 +178,12 @@ void FlipDisplay::setDisplay(String displayString) {
     Serial.println(_currentDisplay);
 #endif
 
+    setAnimationType(_setAnimationType);
     lerpToCurrentDisplay();
+}
+
+void FlipDisplay::setAnimationType(AnimationType type) {
+    _type = type;
 }
 
 void FlipDisplay::enable(bool force) {

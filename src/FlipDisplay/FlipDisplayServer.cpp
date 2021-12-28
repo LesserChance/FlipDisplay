@@ -59,7 +59,7 @@ void initializeServer() {
 }
 
 void initializeGPIO() {
-#if DEBUG || DEBUG_LOOP
+#if DEBUG || DEBUG_LOOP || DEBUG_LERP
     Serial.begin(115200);
     Serial.println("START");
 #endif

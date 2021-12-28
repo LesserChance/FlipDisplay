@@ -27,12 +27,16 @@ class FlipDisplay {
         byte getRegisterOutput();
         int stepCharacter(int characterIndex);
         void setDisplay(String display);
+        void setAnimationType(AnimationType type);
 
         void enable(bool force = false);
         void disable(bool force = false);
 
     private:
         AnimationType _type;
+        AnimationType _setAnimationType;
+        AnimationType _scrollAnimationType;
+
         String _currentDisplay;
 
         FlipDisplayCharacter * _characters[CHARACTER_COUNT];

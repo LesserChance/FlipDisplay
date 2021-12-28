@@ -81,7 +81,7 @@ int FlipDisplayCharacter::getCurrentOffsetFromButton() {
 void FlipDisplayCharacter::startLerp(FlipDisplayLerp lerp) {
     if (_state != FlipDisplayCharacterState::PAUSED && _state != FlipDisplayCharacterState::MOTOR_OFF) {
         // we can only start a lerp if we are paused
-#if DEBUG
+#if DEBUG_LERP
         Serial.println("Tried to lerp unpaused character");
         Serial.print("CHARACTER: ");
         Serial.println(_characterIndex);
@@ -91,7 +91,7 @@ void FlipDisplayCharacter::startLerp(FlipDisplayLerp lerp) {
         return;
     }
 
-#if DEBUG
+#if DEBUG_LERP
     lerp.debug();
 #endif
 

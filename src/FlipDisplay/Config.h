@@ -5,6 +5,7 @@
 
 #define DEBUG 1
 #define DEBUG_LOOP 0
+#define DEBUG_LERP 0
 #define SERVER_ENABLED 1
 
 #define loopPin1 2
