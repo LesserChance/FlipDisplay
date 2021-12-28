@@ -36,7 +36,7 @@ class FlipDisplay {
 
     /**
      * @brief the main loop function, runs all characters
-     * Run each character's loop function and iven the current state of the
+     * Run each character's loop function and given the current state of the
      * display, determine if we need to scroll, enable, or disable
      */
     void run();
