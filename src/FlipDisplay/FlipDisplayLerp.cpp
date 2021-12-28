@@ -63,6 +63,10 @@ bool FlipDisplayLerp::isComplete() {
 }
 
 void FlipDisplayLerp::setDelay(unsigned long delay) {
+    if (_totalSteps == 0) {
+        return;
+    }
+    
     _delay = delay;
 }
 
@@ -72,8 +76,8 @@ void FlipDisplayLerp::debug() {
     // Serial.println(_type);
     Serial.print("_totalDuration:");
     Serial.println(_totalDuration);
-    // Serial.print("_totalSteps:");
-    // Serial.println(_totalSteps);
+    Serial.print("_totalSteps:");
+    Serial.println(_totalSteps);
     // Serial.print("_pointer:");
     // Serial.println(_pointer);
     // Serial.print("_scale:");
@@ -81,6 +85,10 @@ void FlipDisplayLerp::debug() {
 }
 
 void FlipDisplayLerp::setDuration(unsigned long duration) {
+    if (_totalSteps == 0) {
+        return;
+    }
+
     _totalDuration = duration;
     _scale = 0;
 
@@ -132,7 +140,19 @@ unsigned long FlipDisplayLerp::getStepDurationRampUpMax(int step) {
 }
 
 unsigned long FlipDisplayLerp::getStepDurationFlat() {
+    if (_totalSteps == 0) {
+        return 0;
+    }
+
     return (unsigned long) _totalDuration / _totalSteps;
+}
+
+unsigned long FlipDisplayLerp::getAverageStepDuration() {
+    return getStepDurationFlat();
+}
+
+void FlipDisplayLerp::addLoop() {
+    _totalSteps = _totalSteps + STEPS_PER_REVOLUTION;
 }
 
 unsigned long FlipDisplayLerp::getMaxDuration(FlipDisplayLerp* lerps, int lerpCount) {

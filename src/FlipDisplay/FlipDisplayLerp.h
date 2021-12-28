@@ -28,6 +28,8 @@ class FlipDisplayLerp {
         int getTotalSteps();
         unsigned long getTotalDuration();
         unsigned long getLastStepDuration();
+        unsigned long getAverageStepDuration();
+        void addLoop();
         bool isComplete();
         void debug();
 

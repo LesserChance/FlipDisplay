@@ -8,18 +8,18 @@ FlipDisplay::FlipDisplay() {
         _characters[i] = new FlipDisplayCharacter(i, CHARACTER_OFFSET[i]);
     }
 
-    _type = AnimationType::ARRIVE_TOGETHER;
+    _type = AnimationType::CASCADE_RIGHT;
 }
 
 void FlipDisplay::home() {
     if (_isHoming) {
-#if DEBUG
+#if DEBUG_LOOP
     Serial.println("HOMING ALREADY IN PROGRESS, NOT STARTNG");
 #endif
         return;
     }
     
-#if DEBUG
+#if DEBUG_LOOP
     Serial.println("HOMING START");
 #endif
     _isHoming = true;
@@ -34,6 +34,7 @@ void FlipDisplay::home() {
 
 void FlipDisplay::run() {
     _currentTime = micros();
+
     bool isHoming = false;
     int motorOffCount = 0;
 
@@ -63,7 +64,7 @@ void FlipDisplay::run() {
 
     if (_isHoming && !isHoming) {
         _isHoming = isHoming;
-#if DEBUG
+#if DEBUG_LOOP
         Serial.println("HOMING COMPLETE");
 #endif
     }
@@ -102,6 +103,20 @@ void FlipDisplay::readInButtonRegister() {
 
 void FlipDisplay::checkForScroll() {
     if (SCROLLING_ENABLED && _nextScrollTime != 0 && _currentTime > _nextScrollTime) {
+        // if any motors are still moving, do not scroll
+        for (int i = START_CHARACTER; i < CHARACTER_COUNT; i++) {
+            switch (_characters[i]->getState()) {
+                case FlipDisplayCharacter::FlipDisplayCharacterState::HOMING_PAST_BUTTON:
+                case FlipDisplayCharacter::FlipDisplayCharacterState::HOMING_TO_BUTTON:
+                case FlipDisplayCharacter::FlipDisplayCharacterState::HOMING_TO_OFFSET:
+                case FlipDisplayCharacter::FlipDisplayCharacterState::RUNNING:
+                    //dont scroll right now
+                    _nextScrollTime += WAIT_TO_SCROLL;
+                    return;
+            }
+        }
+
+        // all motors are paused - we're ok to scroll now
         _currentDisplayScrollPosition += CHARS_TO_SCROLL;
 
 #if DEBUG
@@ -132,9 +147,8 @@ void FlipDisplay::checkForEnable() {
                     break;
             }
         }
-
         
-        if(!allMotorsDisabled) {
+        if (!allMotorsDisabled) {
             // need to renable the motors
             enable();
         }
@@ -190,20 +204,22 @@ int FlipDisplay::stepCharacter(int characterIndex) {
 
 void FlipDisplay::lerpToCurrentDisplay() {
     String displayString = _currentDisplay.substring(_currentDisplayScrollPosition, _currentDisplayScrollPosition + CHARACTER_COUNT);
-
     FlipDisplayLerp lerps[CHARACTER_COUNT];
 
     for (int i = START_CHARACTER; i < CHARACTER_COUNT; i++) {
         char displayChar = (displayString.length() > i) ? displayString[i] : ' ';
-        // lerps[i] = FlipDisplayLerp(_characters[i]->getStepsToChar(displayChar), FlipDisplayLerp::LerpType::FLAT);
         int steps = _characters[i]->getStepsToChar(displayChar);
-        lerps[i] = FlipDisplayLerp(steps, FlipDisplayLerp::LerpType::LINEAR_SLOW_DOWN);
+
+        if (steps > 0 && steps < MIN_STEPS_PER_LERP) {
+            steps += STEPS_PER_REVOLUTION;
+        }
+
+        lerps[i] = FlipDisplayLerp(steps, FlipDisplayLerp::LerpType::FLAT);
 
         if (steps > STEPS_PER_REVOLUTION) {
             // the character is telling us it needs to loop
             _characters[i]->allowLoop();
         }
-
     }
     
     unsigned long maxDuration = FlipDisplayLerp::getMaxDuration(lerps, CHARACTER_COUNT);
@@ -213,6 +229,40 @@ void FlipDisplay::lerpToCurrentDisplay() {
         case AnimationType::ARRIVE_TOGETHER:
             for (int i = START_CHARACTER; i < CHARACTER_COUNT; i++) {
                 lerps[i].setDelay(maxDuration - lerps[i].getTotalDuration());
+            }
+            break;
+
+        case AnimationType::SAME_DURATION:
+            for (int i = START_CHARACTER; i < CHARACTER_COUNT; i++) {
+                lerps[i].setDuration(maxDuration);
+            }
+            break;
+
+        case AnimationType::CASCADE_LEFT:
+            {
+                int delayAmt = 0;
+                for (int i = START_CHARACTER; i < CHARACTER_COUNT; i++) {
+                    lerps[i].setDuration(maxDuration);
+
+                    if (lerps[i].getTotalSteps() > 0) {
+                        lerps[i].setDelay(delayAmt +  maxDuration - lerps[i].getTotalDuration());
+                        delayAmt += (maxDuration / 2);
+                    }
+                }
+            }
+            break;
+
+        case AnimationType::CASCADE_RIGHT:
+            {
+                int delayAmt = 0;
+                for (int i = CHARACTER_COUNT - 1; i >= START_CHARACTER; i--) {
+                    lerps[i].setDuration(maxDuration);
+
+                    if (lerps[i].getTotalSteps() > 0) {
+                        lerps[i].setDelay(delayAmt +  maxDuration - lerps[i].getTotalDuration());
+                        delayAmt += (maxDuration / 2);
+                    }
+                }
             }
             break;
 

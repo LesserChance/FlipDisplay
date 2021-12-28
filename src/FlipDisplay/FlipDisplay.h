@@ -14,6 +14,10 @@ class FlipDisplay {
         typedef enum {
             START_TOGETHER = 0,             // all characters start at the same time
             ARRIVE_TOGETHER = 1,            // all characters arrive at the destination at the same time
+            SAME_DURATION = 2,              // all characters turn for the same duration (variable speed)
+
+            CASCADE_LEFT = 3,
+            CASCADE_RIGHT = 4              
         } AnimationType;
 
         FlipDisplay();
