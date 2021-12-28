@@ -21,7 +21,11 @@ class FlipDisplay {
         void home();
         void run();
         byte getRegisterOutput();
+        int stepCharacter(int characterIndex);
         void setDisplay(String display);
+
+        void enable(bool force = false);
+        void disable(bool force = false);
 
     private:
         AnimationType _type;
@@ -34,6 +38,7 @@ class FlipDisplay {
         unsigned long _nextScrollTime;
 
         bool _isHoming = false;
+        bool _isDisabled = false;
         
         byte _lastStepPinRegisterOutput = 0b00000000;
         byte _buttonRegisterInput = 0b00000000;
@@ -42,6 +47,7 @@ class FlipDisplay {
         void updateRegisters();
 
         void checkForScroll();
+        void checkForEnable();
         void lerpToCurrentDisplay();
 };
 

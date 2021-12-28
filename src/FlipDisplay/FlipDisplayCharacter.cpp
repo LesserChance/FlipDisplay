@@ -8,7 +8,6 @@
 
 FlipDisplayCharacter::FlipDisplayCharacterState FlipDisplayCharacter::run() {
     _currentTime = micros();
-    // _enablePinValue = LOW;
 
     stepOnTime();
 
@@ -42,14 +41,15 @@ FlipDisplayCharacter::FlipDisplayCharacterState FlipDisplayCharacter::run() {
 
         case FlipDisplayCharacterState::MOTOR_OFF:
         default:
-            // it seems as though the motor can roll back when we disable it, which then loses its position
-            // so for now, we wont disable it
-            // _enablePinValue = HIGH;
             break;
     }
 
     _prevButtonPinValue = _buttonPinValue;
     return _state;
+}
+
+void FlipDisplayCharacter::allowLoop() {
+    _allowLoop = true;
 }
 
 int FlipDisplayCharacter::getStepsToChar(char targetChar) {
@@ -64,10 +64,18 @@ int FlipDisplayCharacter::getStepsToChar(char targetChar) {
     int targetIndex = getCharPosition(targetChar);
     int steps = ((POSSIBLE_CHARACTER_VALUES + (targetIndex - currentIndex)) % POSSIBLE_CHARACTER_VALUES) * STEPS_PER_CHARACTER;
 
-    // todo current Position may not be at 0 for the cvhar - so we need ot adjust basede on that
-
+    if (_state == FlipDisplayCharacterState::MOTOR_OFF) {
+        // we need to ensure we do a full loop, since when the mototr goes off it could roll back a bit
+        // this will effectively re-home every character
+        steps = steps + STEPS_PER_REVOLUTION;
+    }
 
     return steps;
+}
+
+
+int FlipDisplayCharacter::getCurrentOffsetFromButton() {
+    return _currentPosition + _startOffset;
 }
 
 void FlipDisplayCharacter::startLerp(FlipDisplayLerp lerp) {
@@ -120,6 +128,11 @@ void FlipDisplayCharacter::pause() {
     _pausedTime = micros();
 }
 
+FlipDisplayCharacter::FlipDisplayCharacterState FlipDisplayCharacter::getState() {
+    return _state;
+}
+
+
 uint8_t FlipDisplayCharacter::getStepPinValue() {
     return _stepPinValue;
 }
@@ -145,10 +158,6 @@ void FlipDisplayCharacter::setButtonState(uint8_t value) {
     _buttonPinValue = value;
 }
 
-uint8_t FlipDisplayCharacter::getEnablePinValue() {
-    return _enablePinValue;
-}
-
 /**
  * PRIVATE
  */
@@ -158,7 +167,7 @@ void FlipDisplayCharacter::setCurrentPosition(int currentPosition) {
 }
 
 void FlipDisplayCharacter::step(int steps) {
-    if (_state == FlipDisplayCharacterState::PAUSED) {
+    if (_state == FlipDisplayCharacterState::PAUSED || _state == FlipDisplayCharacterState::MOTOR_OFF) {
         _state = FlipDisplayCharacterState::RUNNING;
     }
 
@@ -211,9 +220,26 @@ void FlipDisplayCharacter::stepOnTime() {
          return;
     }
     
+    bool checkForStep = true;
+
     if (_targetPosition != -1 && _currentPosition == _targetPosition) {
-        pause();
-    } else if (_currentTime >= _nextStepTime) {
+        // we hit the target position
+        checkForStep = false;
+
+        if (_allowLoop) {
+            // we're supposed to keep going but stop next time we hit it
+            if (_currentTime >= _nextStepTime) {
+                // since this could happen mutliple times before we actually step, we need to wait until we know a step will happen
+                _allowLoop = false;
+                checkForStep = true;
+            }
+        } else {
+            // we are supposed to stop here
+            pause();
+        }
+    }
+    
+    if (checkForStep && _currentTime >= _nextStepTime) {
         // we have waited at least the right amount of time, go ahead and step
         _phase = !_phase;
         _stepPinValue = _phase;
@@ -269,7 +295,6 @@ FlipDisplayCharacter::FlipDisplayCharacter(int characterIndex, uint8_t startOffs
     _nextStepTime = 0;
     
     _stepPinValue = LOW;
-    _enablePinValue = HIGH;
     _buttonPinValue = LOW;
     _prevButtonPinValue = LOW;
 }

@@ -3,6 +3,7 @@
 #include "FlipDisplay.h"
 
 FlipDisplay::FlipDisplay() {
+    disable(true);
     for (int i = START_CHARACTER; i < CHARACTER_COUNT; i++) {
         _characters[i] = new FlipDisplayCharacter(i, CHARACTER_OFFSET[i]);
     }
@@ -34,8 +35,10 @@ void FlipDisplay::home() {
 void FlipDisplay::run() {
     _currentTime = micros();
     bool isHoming = false;
+    int motorOffCount = 0;
 
     checkForScroll();
+    checkForEnable();
 
     int pauseCount = 0;
     for (int i = START_CHARACTER; i < CHARACTER_COUNT; i++) {
@@ -47,6 +50,10 @@ void FlipDisplay::run() {
             case FlipDisplayCharacter::FlipDisplayCharacterState::HOMING_TO_OFFSET:
                 // true as long as at least one character is homing
                 isHoming = true;
+                break;
+
+            case FlipDisplayCharacter::FlipDisplayCharacterState::MOTOR_OFF:
+                motorOffCount++;
                 break;
 
             default:
@@ -61,6 +68,9 @@ void FlipDisplay::run() {
 #endif
     }
 
+    if (!_isDisabled && motorOffCount == CHARACTER_COUNT) {
+        disable();
+    }
     updateRegisters();
 }
 
@@ -72,15 +82,13 @@ void FlipDisplay::updateRegisters() {
         for (int i = START_CHARACTER; i < CHARACTER_COUNT; i++) {
             digitalWrite(STEP_PIN[i], bitRead(stepPinRegisterOutput, i));
         }
-            
-        // if (_isHoming) {
-            readInButtonRegister();
-            
-            for (int i = START_CHARACTER; i < CHARACTER_COUNT; i++) {
-                uint8_t buttonState = !bitRead(_buttonRegisterInput, i);
-                _characters[i]->debounceButtonState(buttonState);
-            }
-        // }
+        
+        readInButtonRegister();
+        
+        for (int i = START_CHARACTER; i < CHARACTER_COUNT; i++) {
+            uint8_t buttonState = !bitRead(_buttonRegisterInput, i);
+            _characters[i]->debounceButtonState(buttonState);
+        }
     }
 }
 
@@ -110,6 +118,29 @@ void FlipDisplay::checkForScroll() {
     }
 }
 
+void FlipDisplay::checkForEnable() {
+    if (_isDisabled) {
+        bool allMotorsDisabled = true;
+
+        for (int i = START_CHARACTER; i < CHARACTER_COUNT; i++) {
+            switch (_characters[i]->getState()) {
+                case FlipDisplayCharacter::FlipDisplayCharacterState::MOTOR_OFF:
+                    break;
+
+                default:
+                    allMotorsDisabled = false;
+                    break;
+            }
+        }
+
+        
+        if(!allMotorsDisabled) {
+            // need to renable the motors
+            enable();
+        }
+    }
+}
+
 byte FlipDisplay::getRegisterOutput() {
     byte stepPinRegisterOutput = 0b00000000;
     for (int i = START_CHARACTER; i < CHARACTER_COUNT; i++) {
@@ -132,6 +163,31 @@ void FlipDisplay::setDisplay(String displayString) {
     lerpToCurrentDisplay();
 }
 
+void FlipDisplay::enable(bool force) {
+    if (_isDisabled || force) {
+        digitalWrite(enablePin, LOW);
+        _isDisabled = false;
+#if DEBUG
+    Serial.println("ENABLE ALL MOTORS");
+#endif
+    }
+}
+
+void FlipDisplay::disable(bool force) {
+    if (!_isDisabled || force) {
+        digitalWrite(enablePin, HIGH);
+        _isDisabled = true;
+#if DEBUG
+    Serial.println("DISABLE ALL MOTORS");
+#endif
+    }
+}
+
+int FlipDisplay::stepCharacter(int characterIndex) {
+    _characters[characterIndex]->step(1);
+    return _characters[characterIndex]->getCurrentOffsetFromButton() + 1;
+}
+
 void FlipDisplay::lerpToCurrentDisplay() {
     String displayString = _currentDisplay.substring(_currentDisplayScrollPosition, _currentDisplayScrollPosition + CHARACTER_COUNT);
 
@@ -140,7 +196,14 @@ void FlipDisplay::lerpToCurrentDisplay() {
     for (int i = START_CHARACTER; i < CHARACTER_COUNT; i++) {
         char displayChar = (displayString.length() > i) ? displayString[i] : ' ';
         // lerps[i] = FlipDisplayLerp(_characters[i]->getStepsToChar(displayChar), FlipDisplayLerp::LerpType::FLAT);
-        lerps[i] = FlipDisplayLerp(_characters[i]->getStepsToChar(displayChar), FlipDisplayLerp::LerpType::LINEAR_SLOW_DOWN);
+        int steps = _characters[i]->getStepsToChar(displayChar);
+        lerps[i] = FlipDisplayLerp(steps, FlipDisplayLerp::LerpType::LINEAR_SLOW_DOWN);
+
+        if (steps > STEPS_PER_REVOLUTION) {
+            // the character is telling us it needs to loop
+            _characters[i]->allowLoop();
+        }
+
     }
     
     unsigned long maxDuration = FlipDisplayLerp::getMaxDuration(lerps, CHARACTER_COUNT);

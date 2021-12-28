@@ -27,20 +27,24 @@ class FlipDisplayCharacter {
     void startLerp(FlipDisplayLerp lerp);
     void home();
     void pause();
+    FlipDisplayCharacterState getState();
 
     void step(int steps);
+    void allowLoop();
 
     uint8_t getStepPinValue();
-    uint8_t getEnablePinValue();
     void debounceButtonState(uint8_t value);
     void setButtonState(uint8_t value);
     int getStepsToChar(char targetChar);
+    int getCurrentOffsetFromButton();
 
    private:
     const char * _characters = " ABCDEFGHIJKLMNOPQRSTUVWXYZ23456789()'.-";
     
     FlipDisplayCharacterState _state; // the current state of the character
     uint8_t _phase;               // each step needs to output a 1 then a 0
+
+    bool _allowLoop  = false;
 
     int _characterIndex;
     int _currentPosition;         // current step (out of STEPS_PER_REVOLUTION)
@@ -53,7 +57,6 @@ class FlipDisplayCharacter {
     uint8_t _buttonPinValue;      // value read from the button pin
     uint8_t _prevButtonPinValue;  // value read from the button pin on the last run loop
     uint8_t _stepPinValue;        // value to output to the step pin
-    uint8_t _enablePinValue;      // value to output to the enable pin (LOW is ENABLED)
     uint8_t _startOffset;         // how far to offset from the button state change to reach the start point (steps)
 
     unsigned long _nextStepTime;  // the next time (microseconds) the character can step
