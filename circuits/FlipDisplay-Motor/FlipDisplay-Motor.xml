@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<export version="D">
+  <design>
+    <source>/Users/admin/Documents/KiCad/Projects/FlipDisplay-V2.3/FlipDisplay-V2.3.sch</source>
+    <date>Sunday, November 28, 2021 at 12:22:29 AM</date>
+    <tool>Eeschema (5.1.2-1)-1</tool>
+    <sheet number="1" name="/" tstamps="/">
+      <title_block>
+        <title/>
+        <company/>
+        <rev/>
+        <date/>
+        <source>FlipDisplay-V2.3.sch</source>
+        <comment number="1" value=""/>
+        <comment number="2" value=""/>
+        <comment number="3" value=""/>
+        <comment number="4" value=""/>
+      </title_block>
+    </sheet>
+  </design>
+  <components>
+    <comp ref="J3">
+      <value>DRIVER</value>
+      <footprint>Connector_PinHeader_2.54mm:PinHeader_1x08_P2.54mm_Vertical</footprint>
+      <datasheet>~</datasheet>
+      <libsource lib="Connector" part="Conn_01x08_Female" description="Generic connector, single row, 01x08, script generated (kicad-library-utils/schlib/autogen/connector/)"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>619C2B15</tstamp>
+    </comp>
+    <comp ref="J5">
+      <value>Conn_01x08_Female</value>
+      <footprint>Connector_PinHeader_2.54mm:PinHeader_1x08_P2.54mm_Vertical</footprint>
+      <datasheet>~</datasheet>
+      <libsource lib="Connector" part="Conn_01x08_Female" description="Generic connector, single row, 01x08, script generated (kicad-library-utils/schlib/autogen/connector/)"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>619C9E9C</tstamp>
+    </comp>
+    <comp ref="J4">
+      <value>MOTOR</value>
+      <footprint>Connector_JST:JST_XH_B4B-XH-A_1x04_P2.50mm_Vertical</footprint>
+      <datasheet>~</datasheet>
+      <libsource lib="Connector" part="Conn_01x04_Male" description="Generic connector, single row, 01x04, script generated (kicad-library-utils/schlib/autogen/connector/)"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>619CB09A</tstamp>
+    </comp>
+    <comp ref="J2">
+      <value>LOOP SENSOR</value>
+      <footprint>Connector_JST:JST_XH_B3B-XH-A_1x03_P2.50mm_Vertical</footprint>
+      <datasheet>~</datasheet>
+      <libsource lib="Connector" part="Conn_01x03_Male" description="Generic connector, single row, 01x03, script generated (kicad-library-utils/schlib/autogen/connector/)"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>619E24E6</tstamp>
+    </comp>
+    <comp ref="J6">
+      <value>IN</value>
+      <footprint>Connector_JST:JST_XH_B3B-XH-A_1x03_P2.50mm_Vertical</footprint>
+      <datasheet>~</datasheet>
+      <libsource lib="Connector" part="Conn_01x03_Male" description="Generic connector, single row, 01x03, script generated (kicad-library-utils/schlib/autogen/connector/)"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>619E6DF8</tstamp>
+    </comp>
+    <comp ref="J7">
+      <value>OUT</value>
+      <footprint>Connector_JST:JST_XH_B3B-XH-A_1x03_P2.50mm_Vertical</footprint>
+      <datasheet>~</datasheet>
+      <libsource lib="Connector" part="Conn_01x03_Male" description="Generic connector, single row, 01x03, script generated (kicad-library-utils/schlib/autogen/connector/)"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>619EB1B2</tstamp>
+    </comp>
+    <comp ref="J1">
+      <value>ARDUINO</value>
+      <footprint>Connector_JST:JST_XH_B3B-XH-A_1x03_P2.50mm_Vertical</footprint>
+      <datasheet>~</datasheet>
+      <libsource lib="Connector" part="Conn_01x03_Male" description="Generic connector, single row, 01x03, script generated (kicad-library-utils/schlib/autogen/connector/)"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>61A324CC</tstamp>
+    </comp>
+    <comp ref="C1">
+      <value>100uF</value>
+      <footprint>Capacitor_SMD:C_Elec_6.3x7.7</footprint>
+      <datasheet>~</datasheet>
+      <fields>
+        <field name="Cnum">C2836443</field>
+      </fields>
+      <libsource lib="Device" part="CP1" description="Polarized capacitor, US symbol"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>61A3E426</tstamp>
+    </comp>
+  </components>
+  <libparts>
+    <libpart lib="Connector" part="Conn_01x03_Male">
+      <description>Generic connector, single row, 01x03, script generated (kicad-library-utils/schlib/autogen/connector/)</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>Connector*:*_1x??_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">J</field>
+        <field name="Value">Conn_01x03_Male</field>
+      </fields>
+      <pins>
+        <pin num="1" name="Pin_1" type="passive"/>
+        <pin num="2" name="Pin_2" type="passive"/>
+        <pin num="3" name="Pin_3" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Connector" part="Conn_01x04_Male">
+      <description>Generic connector, single row, 01x04, script generated (kicad-library-utils/schlib/autogen/connector/)</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>Connector*:*_1x??_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">J</field>
+        <field name="Value">Conn_01x04_Male</field>
+      </fields>
+      <pins>
+        <pin num="1" name="Pin_1" type="passive"/>
+        <pin num="2" name="Pin_2" type="passive"/>
+        <pin num="3" name="Pin_3" type="passive"/>
+        <pin num="4" name="Pin_4" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Connector" part="Conn_01x08_Female">
+      <description>Generic connector, single row, 01x08, script generated (kicad-library-utils/schlib/autogen/connector/)</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>Connector*:*_1x??_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">J</field>
+        <field name="Value">Conn_01x08_Female</field>
+      </fields>
+      <pins>
+        <pin num="1" name="Pin_1" type="passive"/>
+        <pin num="2" name="Pin_2" type="passive"/>
+        <pin num="3" name="Pin_3" type="passive"/>
+        <pin num="4" name="Pin_4" type="passive"/>
+        <pin num="5" name="Pin_5" type="passive"/>
+        <pin num="6" name="Pin_6" type="passive"/>
+        <pin num="7" name="Pin_7" type="passive"/>
+        <pin num="8" name="Pin_8" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Device" part="CP1">
+      <description>Polarized capacitor, US symbol</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>CP_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">C</field>
+        <field name="Value">CP1</field>
+      </fields>
+      <pins>
+        <pin num="1" name="~" type="passive"/>
+        <pin num="2" name="~" type="passive"/>
+      </pins>
+    </libpart>
+  </libparts>
+  <libraries>
+    <library logical="Connector">
+      <uri>/Library/Application Support/kicad/library/Connector.lib</uri>
+    </library>
+    <library logical="Device">
+      <uri>/Library/Application Support/kicad/library/Device.lib</uri>
+    </library>
+  </libraries>
+  <nets>
+    <net code="1" name="/RS">
+      <node ref="J3" pin="5"/>
+      <node ref="J3" pin="6"/>
+    </net>
+    <net code="2" name="/EN">
+      <node ref="J3" pin="1"/>
+      <node ref="J1" pin="3"/>
+    </net>
+    <net code="3" name="GND">
+      <node ref="J3" pin="3"/>
+      <node ref="J5" pin="1"/>
+      <node ref="C1" pin="2"/>
+      <node ref="J3" pin="4"/>
+      <node ref="J5" pin="7"/>
+      <node ref="J7" pin="1"/>
+      <node ref="J6" pin="1"/>
+      <node ref="J2" pin="1"/>
+      <node ref="J3" pin="8"/>
+    </net>
+    <net code="4" name="/ST">
+      <node ref="J3" pin="7"/>
+      <node ref="J1" pin="2"/>
+    </net>
+    <net code="5" name="/1B">
+      <node ref="J4" pin="3"/>
+      <node ref="J5" pin="3"/>
+    </net>
+    <net code="6" name="/1A">
+      <node ref="J4" pin="4"/>
+      <node ref="J5" pin="4"/>
+    </net>
+    <net code="7" name="/2A">
+      <node ref="J4" pin="2"/>
+      <node ref="J5" pin="5"/>
+    </net>
+    <net code="8" name="/2B">
+      <node ref="J5" pin="6"/>
+      <node ref="J4" pin="1"/>
+    </net>
+    <net code="9" name="+12V">
+      <node ref="C1" pin="1"/>
+      <node ref="J5" pin="8"/>
+      <node ref="J6" pin="2"/>
+      <node ref="J7" pin="2"/>
+    </net>
+    <net code="10" name="+3V3">
+      <node ref="J7" pin="3"/>
+      <node ref="J6" pin="3"/>
+      <node ref="J2" pin="2"/>
+      <node ref="J5" pin="2"/>
+      <node ref="J3" pin="2"/>
+    </net>
+    <net code="11" name="/LOOP">
+      <node ref="J2" pin="3"/>
+      <node ref="J1" pin="1"/>
+    </net>
+  </nets>
+</export>
