@@ -30,12 +30,12 @@ void setupDisplay() {
 
 void loopDisplay() {
     unsigned long _currentTime = micros();
-    
+
     if (buttonOneTriggered) {
         buttonOneTriggered = false;
         // do something
     }
-    
+
     if (buttonTwoTriggered) {
         buttonTwoTriggered = false;
         // do something
@@ -49,6 +49,11 @@ void loopDisplay() {
 }
 
 void initializeServer() {
+    if (!SPIFFS.begin(true)) {
+        Serial.println("An Error has occurred while mounting SPIFFS");
+        return;
+    }
+
     connectWifi();
     setupRouting();
 }
@@ -59,18 +64,19 @@ void initializeGPIO() {
     Serial.println("START");
 #endif
 
+    pinMode(enablePin, OUTPUT);
+
     for (int i = START_CHARACTER; i < CHARACTER_COUNT; i++) {
         pinMode(STEP_PIN[i], OUTPUT);
         pinMode(LOOP_PIN[i], INPUT);
     }
-    
+
     // pinMode(TEST_PIN_ONE, INPUT);
     // pinMode(TEST_PIN_TWO, INPUT);
 
     // attachInterrupt(TEST_PIN_ONE, buttonOnePressed, RISING); // yellow
     // attachInterrupt(TEST_PIN_TWO, buttonTwoPressed, RISING); // green
 }
-
 
 void connectWifi() {
     WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
@@ -96,19 +102,31 @@ void connectWifi() {
 }
 
 void setupRouting() {
-    server.on("/", displayForm);
+    // static routes
+    server.serveStatic("/", SPIFFS, "/index.html");
+    server.serveStatic("/config", SPIFFS, "/config.html");
+    
+    // API
     server.on("/home", homeDisplay);
     server.on("/update", HTTP_POST, setDisplay);
+    server.on("/step", HTTP_POST, stepCharacter);
     server.on("/word", randomWord);
+    
+    server.on("/enable", HTTP_POST, enableDisplayMotors);
+    server.on("/disable", HTTP_POST, disableDisplayMotors);
 
     // start server
     server.begin();
 }
 
-void displayForm() {
-    server.send(200, "text/html", 
-        "<!DOCTYPE html><title>Flip Display</title><meta content='width=device-width,initial-scale=1'name=viewport><link href=https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css rel=stylesheet><link href=https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap-theme.min.css rel=stylesheet><style>html{height:100%}body{background-color:#49b96f;background:linear-gradient(110deg,rgba(73,185,111,1) 74%,rgba(25,116,56,1) 100%);min-height:40rem;height:100%;padding:2rem}.container{height:100%;padding:0}.form-container{background-color:#2a2a2c;color:#FFF;padding:3rem;box-shadow:5px 5px 15px 7px #343;border-radius:5px;border:1px solid #111}img{max-width:100%}button,input,label{margin-right:.5rem}.f{display:inline-block;margin:1rem 0}.container{max-width:970px}</style><div class=container><div class='container form-container'><img class=center-block src=https://i.postimg.cc/3xtR7F4Q/Flip.png><br><br><form action=/update class=form-inline target=ft method=POST><div class=form-group><label>Update Display:</label><input class=form-control name=text></div><button class='btn btn-primary'type=submit>Update</button></form><br><br><label>Other Actions:</label><br><form action=/word class=f target=ft><button class='btn btn-primary'type=submit>Random Word</button></form><form action=/home class=f target=ft><button class='btn btn-success'type=submit>Re-home</button></form><iframe id=ft name=ft style=display:none></iframe></div></div>"
-    );
+void enableDisplayMotors() {
+    display.enable(true);
+    server.send(200, "text/html", "ACK");
+}
+
+void disableDisplayMotors() {
+    display.disable(true);
+    server.send(200, "text/html", "ACK");
 }
 
 void homeDisplay() {
@@ -116,17 +134,39 @@ void homeDisplay() {
     server.send(200, "text/html", "ACK");
 }
 
+void stepCharacter() {
+    Serial.println("stepCharacter");
+    if (server.hasArg("character") == false) {
+        // handle error here
+        Serial.println("FAIL");
+        server.send(400, "text/html", "REQUIRES ARGUMENT 'character'");
+        return;
+    }
+
+    int characterIndex = server.arg("character").toInt();
+    int offsetPosition = display.stepCharacter(characterIndex);
+
+    Serial.print("characterIndex: ");
+    Serial.println(characterIndex);
+
+    Serial.print("offsetPosition: ");
+    Serial.println(offsetPosition);
+
+    server.send(200, "text/html", String(offsetPosition));
+}
+
 void setDisplay() {
     Serial.println("handlePost");
     if (server.hasArg("text") == false) {
-        //handle error here
+        // handle error here
         Serial.println("FAIL");
+        server.send(400, "text/html", "REQUIRES ARGUMENT 'text'");
         return;
     }
 
     String body = server.arg("text");
     display.setDisplay(body);
-    
+
     // Respond to the client
     server.send(200, "text/html", body);
 }
@@ -136,7 +176,7 @@ void randomWord() {
 
     String word = words[random(0, WORD_COUNT)];
     display.setDisplay(word);
-    
+
     // Respond to the client
     server.send(200, "text/html", word);
 }

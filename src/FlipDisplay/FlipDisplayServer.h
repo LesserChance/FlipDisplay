@@ -8,6 +8,7 @@
 #include <HTTPClient.h>
 #include <WebServer.h>
 #include <WiFi.h>
+#include <SPIFFS.h>
 
 void buttonOnePressed();
 void buttonTwoPressed();
@@ -24,6 +25,10 @@ void setupRouting();
 void displayForm();
 void homeDisplay();
 void setDisplay();
+void stepCharacter();
 void randomWord();
+
+void enableDisplayMotors();
+void disableDisplayMotors();
 
 #endif
