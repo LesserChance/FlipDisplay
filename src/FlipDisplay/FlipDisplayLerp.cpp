@@ -2,6 +2,52 @@
 
 #include "FlipDisplayLerp.h"
 
+/*************************************
+ * CONSTRUCTOR
+ *************************************/
+
+FlipDisplayLerp::FlipDisplayLerp(int steps, LerpType type,
+                                 unsigned long duration) {
+    _type = type;
+    _totalSteps = steps;
+    _pointer = 0;
+    _delay = 0;
+    _lastStepDuration = 0;
+
+    if (steps == 0) {
+        // this is an error scenario, we probably just shouldnt set this lerp
+        _totalDuration = 0;
+        _scale = 0;
+        return;
+    }
+
+    if (duration == 0) {
+        // just determine based on the average step duration
+        duration = (unsigned long)AVG_STEP_DURATION * steps;
+    }
+
+    setDuration(duration);
+}
+
+/*************************************
+ * STATIC
+ *************************************/
+
+unsigned long FlipDisplayLerp::getMaxDuration(FlipDisplayLerp* lerps,
+                                              int lerpCount) {
+    unsigned long maxDuration = 0;
+
+    for (int i = 0; i < lerpCount; i++) {
+        maxDuration = max(lerps[i].getTotalDuration(), maxDuration);
+    }
+
+    return maxDuration;
+}
+
+/*************************************
+ * PUBLIC
+ *************************************/
+
 unsigned long FlipDisplayLerp::getTimeToNextStep() {
     if (_totalDuration == 0) {
         // there were no steps, this is an error scenario
@@ -19,19 +65,19 @@ unsigned long FlipDisplayLerp::getTimeToNextStep() {
 
     switch (_type) {
         case LerpType::LINEAR_SPEED_UP:
-            stepDuration = getStepDurationSpeedUp(_pointer);
+            stepDuration = getStepDurationSpeedUp();
             break;
 
         case LerpType::LINEAR_SLOW_DOWN:
-            stepDuration = getStepDurationSlowDown(_pointer);
+            stepDuration = getStepDurationSlowDown();
             break;
 
         case LerpType::RAMP_UP_MAX:
-            stepDuration = getStepDurationRampUpMax(_pointer);
+            stepDuration = getStepDurationRampUpMax();
             break;
 
         case LerpType::RAMP_DOWN_MAX:
-            stepDuration = getStepDurationRampDownMax(_pointer);
+            stepDuration = getStepDurationRampDownMax();
             break;
 
         case LerpType::FLAT:
@@ -39,36 +85,55 @@ unsigned long FlipDisplayLerp::getTimeToNextStep() {
             stepDuration = getStepDurationFlat();
             break;
     }
-    
+
     _pointer++;
 
     _lastStepDuration = stepDuration;
     return stepDuration;
 }
 
-int FlipDisplayLerp::getTotalSteps() {
-    return _totalSteps;
+void FlipDisplayLerp::addLoop() {
+    _totalSteps = _totalSteps + STEPS_PER_REVOLUTION;
 }
 
-unsigned long FlipDisplayLerp::getTotalDuration() {
-    return _totalDuration;
-}
+int FlipDisplayLerp::getTotalSteps() { return _totalSteps; }
 
-unsigned long FlipDisplayLerp::getLastStepDuration() {
-    return _lastStepDuration;
-}
+void FlipDisplayLerp::setDuration(unsigned long duration) {
+    if (_totalSteps == 0) {
+        return;
+    }
 
-bool FlipDisplayLerp::isComplete() {
-    return  (_pointer >= _totalSteps);
+    _totalDuration = duration;
+    _scale = 0;
+
+    if (_type != LerpType::FLAT) {
+        // What percent can we move the min and max by to not go below the min
+        // threshold
+        unsigned long flatDuration = getStepDurationFlat();
+        _scale =
+            (double)(flatDuration - MIN_STEP_DURATION) * 100 / flatDuration;
+    }
 }
 
 void FlipDisplayLerp::setDelay(unsigned long delay) {
     if (_totalSteps == 0) {
         return;
     }
-    
+
     _delay = delay;
 }
+
+unsigned long FlipDisplayLerp::getTotalDuration() { return _totalDuration; }
+
+unsigned long FlipDisplayLerp::getLastStepDuration() {
+    return _lastStepDuration;
+}
+
+unsigned long FlipDisplayLerp::getAverageStepDuration() {
+    return getStepDurationFlat();
+}
+
+bool FlipDisplayLerp::isComplete() { return (_pointer >= _totalSteps); }
 
 void FlipDisplayLerp::debug() {
     Serial.println("LERP:");
@@ -84,56 +149,45 @@ void FlipDisplayLerp::debug() {
     // Serial.println(_scale);
 }
 
-void FlipDisplayLerp::setDuration(unsigned long duration) {
-    if (_totalSteps == 0) {
-        return;
-    }
+/*************************************
+ * PRIVATE
+ *************************************/
 
-    _totalDuration = duration;
-    _scale = 0;
-
-    if (_type != LerpType::FLAT) {
-        // What percent can we move the min and max by to not go below the min threshold
-        unsigned long flatDuration = getStepDurationFlat();
-        _scale = (double) (flatDuration - MIN_STEP_DURATION) * 100 / flatDuration;
-    }
-}
-
-unsigned long FlipDisplayLerp::getStepDurationSpeedUp(int step) {
+unsigned long FlipDisplayLerp::getStepDurationSpeedUp() {
     unsigned long flatDuration = getStepDurationFlat();
 
     // scale steps (+X% -> -X%)
-    double scale = (double) step / _totalSteps;
+    double scale = (double)_pointer / _totalSteps;
     double mapped = map(scale * 100, 0, 100, 100 + _scale, 100 - _scale);
 
     return (flatDuration * (mapped / 100));
 }
 
-unsigned long FlipDisplayLerp::getStepDurationSlowDown(int step) {
+unsigned long FlipDisplayLerp::getStepDurationSlowDown() {
     unsigned long flatDuration = getStepDurationFlat();
 
     // scale steps (-X% -> +X%)
-    double scale = (double) step / _totalSteps;
+    double scale = (double)_pointer / _totalSteps;
     double mapped = map(scale * 100, 0, 100, 100 - _scale, 100 + _scale);
 
     return (flatDuration * (mapped / 100));
 }
 
-unsigned long FlipDisplayLerp::getStepDurationRampDownMax(int step) {
+unsigned long FlipDisplayLerp::getStepDurationRampDownMax() {
     unsigned long flatDuration = getStepDurationFlat();
 
     // scale steps (-X% -> +X% -> -X%)
-    double scale = (double) abs(step - (_totalSteps / 2)) / _totalSteps;
+    double scale = (double)abs(_pointer - (_totalSteps / 2)) / _totalSteps;
     double mapped = map(scale * 100, 50, 0, 100 - _scale, 100 + _scale);
 
     return (flatDuration * (mapped / 100));
 }
 
-unsigned long FlipDisplayLerp::getStepDurationRampUpMax(int step) {
+unsigned long FlipDisplayLerp::getStepDurationRampUpMax() {
     unsigned long flatDuration = getStepDurationFlat();
 
     // scale steps (+X% -> -X% -> +X%)
-    double scale = (double) abs(step - (_totalSteps / 2)) / _totalSteps;
+    double scale = (double)abs(_pointer - (_totalSteps / 2)) / _totalSteps;
     double mapped = map(scale * 100, 50, 0, 100 + _scale, 100 - _scale);
 
     return (flatDuration * (mapped / 100));
@@ -144,45 +198,5 @@ unsigned long FlipDisplayLerp::getStepDurationFlat() {
         return 0;
     }
 
-    return (unsigned long) _totalDuration / _totalSteps;
-}
-
-unsigned long FlipDisplayLerp::getAverageStepDuration() {
-    return getStepDurationFlat();
-}
-
-void FlipDisplayLerp::addLoop() {
-    _totalSteps = _totalSteps + STEPS_PER_REVOLUTION;
-}
-
-unsigned long FlipDisplayLerp::getMaxDuration(FlipDisplayLerp* lerps, int lerpCount) {
-    unsigned long maxDuration = 0;
-
-    for (int i = 0; i < lerpCount; i++){
-        maxDuration = max(lerps[i].getTotalDuration(), maxDuration);
-    }
-
-    return maxDuration;
-}
-
-FlipDisplayLerp::FlipDisplayLerp(int steps, LerpType type, unsigned long duration) {
-    _type = type;
-    _totalSteps = steps;
-    _pointer = 0;
-    _delay = 0;
-    _lastStepDuration = 0;
-
-    if (steps == 0) {
-        // this is an error scenario, we probably just shouldnt set this lerp
-        _totalDuration = 0;
-        _scale = 0;
-        return;
-    }
-    
-    if (duration == 0) {
-        // just determine based on the average step duration
-        duration = (unsigned long) AVG_STEP_DURATION * steps;
-    }
-
-    setDuration(duration);
+    return (unsigned long)_totalDuration / _totalSteps;
 }

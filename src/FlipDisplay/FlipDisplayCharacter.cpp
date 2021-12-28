@@ -297,8 +297,7 @@ void FlipDisplayCharacter::calculateNextStepTime() {
         case FlipDisplayCharacterState::HOMING_TO_BUTTON:
         case FlipDisplayCharacterState::HOMING_TO_OFFSET:
             // just move at the standard rate
-            _nextStepTime =
-                _currentTime + FlipDisplayLerp::C_HOMING_STEP_DURATION;
+            _nextStepTime = _currentTime + HOMING_STEP_DURATION;
             break;
     }
 }
