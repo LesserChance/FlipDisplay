@@ -2,3 +2,5 @@ src/FlipDisplay/.vscode/arduino.json
 src/FlipDisplay/.vscode/c_cpp_properties.json
 src/FlipDisplay/.vscode/settings.json
 src/FlipDisplay/Secrets.h
+circuits/FlipDisplay-Motor/.DS_Store
+circuits/FlipDisplay-Motor/Gerbers/.DS_Store
