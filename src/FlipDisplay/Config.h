@@ -8,6 +8,8 @@
 #define DEBUG_LERP 0
 #define SERVER_ENABLED 1
 
+#define WIFI_FAIL_COUNT 20
+
 #define loopPin1 2
 #define loopPin2 5
 #define loopPin3 19
@@ -24,8 +26,8 @@
 
 #define enablePin 13
 
-// #define TEST_PIN_ONE 5          // trigger lerp (yellow)
-// #define TEST_PIN_TWO 2         // trigger home (green)
+#define TEST_PIN_ONE 15                    // manual trigger (yellow)
+#define TEST_PIN_TWO 16                    // manual trigger (green)
 
 #define TOTAL_CHARACTERS 6                 // the total number of characters we're able to control
 #define START_CHARACTER 0                  // which index is the first character (allows you to test just characters at the end)

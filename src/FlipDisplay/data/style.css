@@ -1,0 +1,35 @@
+html {
+    height:100%;
+}
+body {
+    background-color:#49b96f;
+    background: linear-gradient(110deg, rgba(73,185,111,1) 74%, rgba(25,116,56,1) 100%);
+    min-height:40rem;
+    height:100%;
+    padding:2rem
+}
+.container {
+    height:100%;
+    padding: 0;
+}
+.form-container {
+    background-color:#2a2a2c;
+    color:#FFF;
+    padding:3rem;
+    box-shadow:5px 5px 15px 7px #343;
+    border-radius:5px;
+    border: 1px solid #111;
+}
+img {
+    max-width:100%
+}
+button, input, label {
+    margin-right:.5rem
+}
+.f {
+    display:inline-block;
+    margin:1rem 0
+}
+.container {
+    max-width:970px
+}

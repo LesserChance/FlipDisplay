@@ -4,47 +4,73 @@
 <head>
     <title>Flip Display</title>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
-    <link rel='stylesheet' href='https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css' >
-    <link rel='stylesheet' href='https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap-theme.min.css' >
-    <style type='text/css'>
-        .f {
-            display:inline-block;
-        }
-    </style>
+    <link rel='stylesheet' href='/bootstrap.min.css'>
+    <link rel='stylesheet' href='/bootstrap-theme.min.css'>
+    <link rel='stylesheet' href='/style.css'>
 </head>
 
 <body>
     <div class='container'>
-        <h1>Flip Display Admin</h1>
-        <h2>Set Motor Status</h1>
-        <form class='f' method='POST' action='/enable' target='ft'>
-            <button type='submit' class='btn btn-success'>Enable</button>
-        </form>
-        <form class='f' method='POST' action='/disable' target='ft'>
-            <button type='submit' class='btn btn-primary'>Disable</button>
-        </form>
+        <div class='container form-container'>
+            <img src='/Flip.png' class='center-block' />
+            <br /><br />
 
-        <h2>Setup Initial Offsets</h1>
-        After construction, use this to determine the values for `CHARACTER_OFFSET`.<br/><br/>
+            <h1>Flip Display Admin</h1>
 
-        <b>Step 1: Re-home</b>
-        <form method='GET' action='/home' target='ft'>
-            <button type='submit' class='btn btn-success'>Re-home</button>
-        </form>
-        <br/>
+            <h2>Wifi: Set New SSID</h2>
+            <form action="/wifi" method="POST">
+                <div class="form-group">
+                    <label>SSID:</label>
+                    <input type='text' name='ssid' class='form-control' />
+                </div>
+                <div class="form-group">
+                    <label>Password:</label>
+                    <input type='password' name='pass' class='form-control' />
+                </div>
 
-        <b>Step 2: find offset position by doing one step at a time</b>
-        <form method='POST' action='/step' target='ft'>
-            <input type="hidden" id="character" name="character" value="" />
-            <button type='submit' class='btn btn-primary' onclick='document.getElementById("character").value = "0";'>Step 0</button>
-            <button type='submit' class='btn btn-primary' onclick='document.getElementById("character").value = "1";'>Step 1</button>
-            <button type='submit' class='btn btn-primary' onclick='document.getElementById("character").value = "2";'>Step 2</button>
-            <button type='submit' class='btn btn-primary' onclick='document.getElementById("character").value = "3";'>Step 3</button>
-            <button type='submit' class='btn btn-primary' onclick='document.getElementById("character").value = "4";'>Step 4</button>
-            <button type='submit' class='btn btn-primary' onclick='document.getElementById("character").value = "5";'>Step 5</button>
-        </form>
+                <input type="submit" value="Save" class='btn btn-primary'>
+            </form>
 
+            <h2>Set Motor Status</h2>
+            <form class='f' method='POST' action='/enable' target='ft'>
+                <button type='submit' class='btn btn-success'>Enable</button>
+            </form>
+            <form class='f' method='POST' action='/disable' target='ft'>
+                <button type='submit' class='btn btn-primary'>Disable</button>
+            </form>
+
+            <h2>Setup Initial Offsets</h2>
+            After construction, use this to determine the values for `CHARACTER_OFFSET`.<br /><br />
+
+            <b>Step 1: Re-home</b>
+            <form method='POST' action='/home' target='ft'>
+                <button type='submit' class='btn btn-success'>Re-home</button>
+            </form>
+            <br />
+
+            <b>Step 2: find offset position by doing one step at a time</b>
+            <form method='POST' action='/step' target='ft'>
+                <input type="hidden" id="character" name="character" value="" />
+                <button type='submit' class='btn btn-primary'
+                    onclick='document.getElementById("character").value = "0";'>Step 0</button>
+                <button type='submit' class='btn btn-primary'
+                    onclick='document.getElementById("character").value = "1";'>Step 1</button>
+                <button type='submit' class='btn btn-primary'
+                    onclick='document.getElementById("character").value = "2";'>Step 2</button>
+                <button type='submit' class='btn btn-primary'
+                    onclick='document.getElementById("character").value = "3";'>Step 3</button>
+                <button type='submit' class='btn btn-primary'
+                    onclick='document.getElementById("character").value = "4";'>Step 4</button>
+                <button type='submit' class='btn btn-primary'
+                    onclick='document.getElementById("character").value = "5";'>Step 5</button>
+            </form>
+
+            <h2>Configure Sonos</h2>
+            <a href="https://api.sonos.com/login/v3/oauth?client_id=a69370bf-5714-410b-be03-9880cdc42fe9&response_type=code&state=testState&scope=playback-control-all&redirect_uri=https%3A%2F%2Fryan-bateman.com%2Fconfig.html">Authorize</a>
+
+        </div>
     </div>
     <iframe name='ft' id='ft' style='display: none;'></iframe>
 </body>
+
 </html>

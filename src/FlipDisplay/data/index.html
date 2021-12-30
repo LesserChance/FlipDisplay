@@ -4,52 +4,16 @@
 <head>
     <title>Flip Display</title>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
-    <link rel='stylesheet' href='https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css' >
-    <link rel='stylesheet' href='https://stackpath.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap-theme.min.css' >
-    <style type='text/css'>
-        html {
-            height:100%;
-        }
-        body {
-            background-color:#49b96f;
-            background: linear-gradient(110deg, rgba(73,185,111,1) 74%, rgba(25,116,56,1) 100%);
-            min-height:40rem;
-            height:100%;
-            padding:2rem
-        }
-        .container {
-            height:100%;
-            padding: 0;
-        }
-        .form-container {
-            background-color:#2a2a2c;
-            color:#FFF;
-            padding:3rem;
-            box-shadow:5px 5px 15px 7px #343;
-            border-radius:5px;
-            border: 1px solid #111;
-        }
-        img {
-            max-width:100%
-        }
-        button, input, label {
-            margin-right:.5rem
-        }
-        .f {
-            display:inline-block;
-            margin:1rem 0
-        }
-        .container {
-            max-width:970px
-        }
-    </style>
+    <link rel='stylesheet' href='/bootstrap.min.css'>
+    <link rel='stylesheet' href='/bootstrap-theme.min.css'>
+    <link rel='stylesheet' href='/style.css'>
 </head>
 
 <body>
     <div class='container'>
         <div class='container form-container'>
-            <img src='https://i.postimg.cc/3xtR7F4Q/Flip.png' class='center-block' />
-            <br/><br/>
+            <img src='/Flip.png' class='center-block' />
+            <br /><br />
 
             <form class='form-inline' method='POST' action='/update' target='ft'>
                 <div class="form-group">
@@ -58,19 +22,20 @@
                 </div>
                 <button type='submit' class='btn btn-primary'>Update</button>
             </form>
-            <br/><br/>
+            <br /><br />
 
-            <label>Other Actions:</label><br/>
-            <form class='f' method='GET' action='/word' target='ft'>
+            <label>Other Actions:</label><br />
+            <form class='f' method='POST' action='/word' target='ft'>
                 <button type='submit' class='btn btn-primary'>Random Word</button>
             </form>
-            
-            <form class='f' method='GET' action='/home' target='ft'>
+
+            <form class='f' method='POST' action='/home' target='ft'>
                 <button type='submit' class='btn btn-success'>Re-home</button>
             </form>
 
-            <iframe name='ft' id='ft' style='display: none;'></iframe>
         </div>
     </div>
+    <iframe name='ft' id='ft' style='display: none;'></iframe>
 </body>
+
 </html>
