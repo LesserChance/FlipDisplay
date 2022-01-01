@@ -66,6 +66,10 @@ void FlipDisplay::run() {
 
 void FlipDisplay::setDisplay(String displayString) {
     displayString.toUpperCase();
+    if (_currentDisplay == displayString) {
+        return;
+    }
+
     _currentDisplay = displayString;
     _currentDisplayScrollPosition = 0;
 

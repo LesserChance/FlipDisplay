@@ -18,6 +18,16 @@ class FlipDisplayServer {
     void setup();
     
    private:
+    FlipDisplay _display;
+
+    //Variables to save values from HTML form
+    String _ssid;
+    String _pass;
+
+    // File paths to save input values permanently
+    const char* _ssidPath = "/ssid.txt";
+    const char* _passPath = "/pass.txt";
+    
     void initSPIFFS();
 
     String readFile(fs::FS &fs, const char * path);
@@ -38,15 +48,6 @@ class FlipDisplayServer {
     void stepCharacter(AsyncWebServerRequest *request);
     void randomWord(AsyncWebServerRequest *request);
 
-    FlipDisplay _display;
-
-    //Variables to save values from HTML form
-    String _ssid;
-    String _pass;
-
-    // File paths to save input values permanently
-    const char* _ssidPath = "/ssid.txt";
-    const char* _passPath = "/pass.txt";
 };
 
 #endif
