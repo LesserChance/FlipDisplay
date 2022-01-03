@@ -5,7 +5,6 @@
     <title>Flip Display</title>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
     <link rel='stylesheet' href='/bootstrap.min.css'>
-    <link rel='stylesheet' href='/bootstrap-theme.min.css'>
     <link rel='stylesheet' href='/style.css'>
 </head>
 
@@ -70,14 +69,15 @@
             Auth cannot be integrated because ESP32 cannot currently run ssl. I could set up another server and ping this, but that'd be annoying...
             <br/><br/>
             
-            First Click this url:<br/>
-            <a href="https://api.sonos.com/login/v3/oauth?client_id=%SONOS_API_KEY%&response_type=code&state=testState&scope=playback-control-all&redirect_uri=%SONOS_REDIRECT_URL%" target="_blank">Authorize</a>
+            <b>Step 1: </b><a href="https://api.sonos.com/login/v3/oauth?client_id=%SONOS_API_KEY%&response_type=code&state=testState&scope=playback-control-all&redirect_uri=%SONOS_REDIRECT_URL%" target="_blank">Authorize Sonos</a>
             <br/><br/>
 
+            <b>Step 2: Get a new access token</b>
             It redirects to a url with a "code" parameter. Use this command to get an access token, and save that in the field below:<br/>
             <pre><code>curl -X POST -H "Content-Type: application/x-www-form-urlencoded;charset=utf-8" -H "Authorization: Basic {%SONOS_API_AUTH_B64%}" "https://api.sonos.com/login/v3/oauth/access" -d "grant_type=authorization_code&code=[INSERT_CODE_HERE]&redirect_uri=https://ryan-bateman.com/"</code></pre>
             <br/>
 
+            <b>Step 3: Save a new access token</b>
             <form class='form-inline' method='POST' action='/sonos'>
                 <div class="form-group">
                     <label>Access Token:</label>
@@ -88,9 +88,6 @@
             </form>
 
             <h3>Configure Groups</h3>
-            <a href="/sonosGroups" target="_blank">Get Groups</a>
-            <br/><br/>
-
             <form class='form-inline' method='POST' action='/sonos'>
                 <div class="form-group">
                     <label>Sonos Group:</label>
@@ -98,6 +95,7 @@
                 </div>
 
                 <input type="submit" value="Save" class='btn btn-primary'>
+                <a href="/sonosGroups" target="_blank" class='btn btn-success' role='button'>View Sonos Groups</a>
             </form>
 
         </div>
