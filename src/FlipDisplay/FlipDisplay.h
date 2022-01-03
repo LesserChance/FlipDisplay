@@ -5,7 +5,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "Config.h"
+#include "FlipDisplayConfig.h"
 #include "FlipDisplayCharacter.h"
 #include "FlipDisplayLerp.h"
 
@@ -77,6 +77,12 @@ class FlipDisplay {
      */
     void disable(bool force = false);
 
+    /**
+     * @brief restart the ESP after some delay
+     * @param delay seconds to delay before restarting
+     */
+    void triggerRestart(int delay);
+
    private:
     /*************************************
      * PROPERTIES
@@ -117,6 +123,9 @@ class FlipDisplay {
 
     // the input for the button pins that detect motor loops
     byte _buttonRegisterInput = 0b00000000;
+
+    // the timestamp to treigger an ESP restart
+    unsigned long _triggerRestart = 0;
 
     /*************************************
      * METHODS

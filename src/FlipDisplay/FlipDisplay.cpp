@@ -45,6 +45,13 @@ void FlipDisplay::home() {
 
 void FlipDisplay::run() {
     _currentTime = micros();
+    
+    if (_triggerRestart) {
+        if (_currentTime > _triggerRestart) {
+            Serial.println("RESTARTING");
+            ESP.restart();
+        }
+    }
 
     // check for any state changes we want to do before running
     checkForScroll();
@@ -117,6 +124,11 @@ void FlipDisplay::disable(bool force) {
         Serial.println("DISABLE ALL MOTORS");
 #endif
     }
+}
+
+void FlipDisplay::triggerRestart(int delay) {
+    Serial.println("TRIGGERING A RESTART");
+    _triggerRestart = _currentTime + (delay * 1000000);
 }
 
 /*************************************

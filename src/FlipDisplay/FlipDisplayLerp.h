@@ -4,7 +4,7 @@
 #include <Arduino.h>
 #include <stdint.h>
 
-#include "Config.h"
+#include "FlipDisplayConfig.h"
 
 class FlipDisplayLerp {
    public:

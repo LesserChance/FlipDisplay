@@ -1,11 +1,15 @@
-#ifndef Config_h
-#define Config_h
+#ifndef FlipDisplayConfig_H
+#define FlipDisplayConfig_H
 
 #include <Arduino.h>
+#include <SPIFFS.h>
+
+#include "Secrets.h"
 
 #define DEBUG 1
 #define DEBUG_LOOP 0
 #define DEBUG_LERP 0
+#define DEBUG_RESPONSES 0
 
 #define WIFI_FAIL_COUNT 20
 
@@ -52,5 +56,32 @@
 const int STEP_PIN[TOTAL_CHARACTERS] = {stepPin1, stepPin2, stepPin3, stepPin4, stepPin5, stepPin6};
 const int LOOP_PIN[TOTAL_CHARACTERS] = {loopPin1, loopPin2, loopPin3, loopPin4, loopPin5, loopPin6};
 const int CHARACTER_OFFSET[TOTAL_CHARACTERS] = {45,38,37,54,34,34};
+
+#define WIFI_SSID_PATH "/ssid.txt"
+#define WIFI_PASSWORD_PATH "/pass.txt"
+#define SONOS_ACCESS_TOKEN_PATH "/sonos_access_token.txt"
+#define SONOS_GROUP_ID_PATH "/sonos_group_id.txt"
+
+class FlipDisplayConfig {
+   public:
+    typedef enum {
+        WIFI_SSID = 0,
+        WIFI_PASSWORD = 1,
+        SONOS_ACCESS_TOKEN = 2,
+        SONOS_GROUP_ID = 3,
+    } ConfigKey;
+
+    static void initializePersistedValues();
+    static String getPersistedValue(ConfigKey key);
+    static void setPersistedValue(ConfigKey key, const char * message);
+    static void deletePersistedValue(ConfigKey key);
+    
+   private:
+    static void initSPIFFS();
+
+    static String readFile(fs::FS &fs, const char * path);
+    static void writeFile(fs::FS &fs, const char * path, const char * message);
+    static void deleteFile(fs::FS &fs, const char * path);
+};
 
 #endif

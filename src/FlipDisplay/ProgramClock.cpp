@@ -3,19 +3,15 @@
 
 ProgramClock::ProgramClock() {}
 
-ProgramClock::ProgramClock(FlipDisplay display) {
-    _display = display;
-}
+ProgramClock::ProgramClock(FlipDisplay *display) { _display = display; }
 
-void ProgramClock::setup() {
-    setTimeByNTP();
-}
+void ProgramClock::setup() { setTimeByNTP(); }
 
 void ProgramClock::run(bool buttonOne, bool buttonTwo) {
     unsigned long _currentTime = millis();
 
     if (_currentTime >= _lastRunTime + 10000) {
-        _display.setDisplay(getTime());
+        _display->setDisplay(getTime());
         _lastRunTime = _currentTime;
     }
 }
@@ -26,8 +22,10 @@ void ProgramClock::setTimeByNTP() {
 
 String ProgramClock::getTime() {
     struct tm timeinfo;
-    if(!getLocalTime(&timeinfo)){
+    if (!getLocalTime(&timeinfo)) {
+#if DEBUG_RESPONSES
         Serial.println("CLOCK: could not obtain time");
+#endif
         return "";
     }
 

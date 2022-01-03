@@ -1,12 +1,14 @@
 #include "FlipDisplay.h"
 #include "FlipDisplayServer.h"
 #include "ProgramClock.h"
+#include "ProgramSonos.h"
 
 FlipDisplay display;
 FlipDisplayServer server;
 
 // programs
 ProgramClock progClock;
+ProgramSonos progSonos;
 
 volatile bool buttonOneTriggered = false;
 volatile bool buttonTwoTriggered = false;
@@ -38,18 +40,21 @@ void initializeGPIO() {
     pinMode(TEST_PIN_ONE, INPUT);
     pinMode(TEST_PIN_TWO, INPUT);
 
-    attachInterrupt(TEST_PIN_ONE, buttonOnePressed, RISING); // yellow
-    attachInterrupt(TEST_PIN_TWO, buttonTwoPressed, RISING); // green
+    attachInterrupt(TEST_PIN_ONE, buttonOnePressed, RISING);  // yellow
+    attachInterrupt(TEST_PIN_TWO, buttonTwoPressed, RISING);  // green
 }
 
 void initializeServer() {
-  server = FlipDisplayServer(display);
-  server.setup();
+    server = FlipDisplayServer(&display);
+    server.setup();
 }
 
 void initializePrograms() {
-  progClock = ProgramClock(display);
-  progClock.setup();
+    progClock = ProgramClock(&display);
+    progClock.setup();
+
+    progSonos = ProgramSonos(&display);
+    progSonos.setup();
 }
 
 void setup() {
@@ -64,7 +69,8 @@ unsigned long lastTime = 0;
 
 void loop() {
     // todo: switch between active programs
-    progClock.run(buttonOneTriggered, buttonTwoTriggered);
+    // progClock.run(buttonOneTriggered, buttonTwoTriggered);
+    progSonos.run(buttonOneTriggered, buttonTwoTriggered);
 
     if (buttonOneTriggered) {
         buttonOneTriggered = false;

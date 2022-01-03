@@ -1,12 +1,20 @@
 
 #include "FlipDisplayServer.h"
-#include "Secrets.h"
 
 AsyncWebServer webserver(80);
 
+String processor(const String &var) {
+    if (var == "SERVER_URL") return SERVER_URL;
+    if (var == "SONOS_API_KEY") return SONOS_API_KEY;
+    if (var == "SONOS_API_AUTH_B64") return SONOS_API_AUTH_B64;
+    if (var == "SONOS_REDIRECT_URL") return SONOS_REDIRECT_URL;
+
+    return String();
+}
+
 FlipDisplayServer::FlipDisplayServer() {}
 
-FlipDisplayServer::FlipDisplayServer(FlipDisplay display) {
+FlipDisplayServer::FlipDisplayServer(FlipDisplay *display) {
     _display = display;
 }
 
@@ -14,10 +22,23 @@ void FlipDisplayServer::setup() {
     initSPIFFS();
 
     // Load values saved in SPIFFS
-    _ssid = readFile(SPIFFS, _ssidPath);
-    _pass = readFile(SPIFFS, _passPath);
+    _ssid = FlipDisplayConfig::getPersistedValue(
+        FlipDisplayConfig::ConfigKey::WIFI_SSID);
+    _pass = FlipDisplayConfig::getPersistedValue(
+        FlipDisplayConfig::ConfigKey::WIFI_PASSWORD);
 
-    // try to connect ot the wifi with the given credentials
+    if (_ssid == "") {
+        // there is not yet an SSID defined, which means the data directory has
+        // been wiped
+        FlipDisplayConfig::initializePersistedValues();
+
+        _ssid = FlipDisplayConfig::getPersistedValue(
+            FlipDisplayConfig::ConfigKey::WIFI_SSID);
+        _pass = FlipDisplayConfig::getPersistedValue(
+            FlipDisplayConfig::ConfigKey::WIFI_PASSWORD);
+    }
+
+    // try to connect to the wifi with the given credentials
     if (initWiFi()) {
         initServer();
     } else {
@@ -28,47 +49,6 @@ void FlipDisplayServer::setup() {
 void FlipDisplayServer::initSPIFFS() {
     if (!SPIFFS.begin(true)) {
         Serial.println("An error has occurred while mounting SPIFFS");
-    }
-}
-
-String FlipDisplayServer::readFile(fs::FS &fs, const char *path) {
-    File file = fs.open(path);
-    if (!file || file.isDirectory()) {
-        Serial.println("- failed to open file for reading");
-        return String();
-    }
-
-    String fileContent;
-    while (file.available()) {
-        fileContent = file.readStringUntil('\n');
-        break;
-    }
-    return fileContent;
-}
-
-void FlipDisplayServer::writeFile(fs::FS &fs, const char *path,
-                                  const char *message) {
-    File file = fs.open(path, FILE_WRITE);
-    if (!file) {
-        Serial.println("- failed to open file for writing");
-        return;
-    }
-    if (!file.print(message)) {
-        Serial.println("- frite failed");
-    }
-}
-
-void FlipDisplayServer::deleteFile(fs::FS &fs, const char *path) {
-    Serial.printf("Deleting file: %s\r\n", path);
-
-    if (!fs.exists(path)) {
-        Serial.println("- failed to locate file for deleting");
-        return;
-    }
-
-    boolean success = fs.remove(path);
-    if (!success) {
-        Serial.println("- delete failed");
     }
 }
 
@@ -111,7 +91,7 @@ void FlipDisplayServer::initSoftAP() {
 
     // serve the apropriate index
     webserver.on("/", HTTP_GET, [this](AsyncWebServerRequest *request) {
-        request->send(SPIFFS, "/wifi-setup.html", "text/html");
+        request->send(SPIFFS, "/wifi-setup.html", String(), false, processor);
     });
 
     setupRouting();
@@ -122,7 +102,7 @@ void FlipDisplayServer::initSoftAP() {
 void FlipDisplayServer::initServer() {
     // serve the apropriate index
     webserver.on("/", HTTP_GET, [this](AsyncWebServerRequest *request) {
-        request->send(SPIFFS, "/index.html", "text/html");
+        request->send(SPIFFS, "/index.html", String(), false, processor);
     });
 
     setupRouting();
@@ -130,13 +110,13 @@ void FlipDisplayServer::initServer() {
     webserver.begin();
 }
 
-void FlipDisplayServer::resetSSID() {
-    deleteFile(SPIFFS, _ssidPath);
-    deleteFile(SPIFFS, _passPath);
-}
-
 void FlipDisplayServer::setupRouting() {
     webserver.serveStatic("/", SPIFFS, "/");
+
+    // non-static pages
+    webserver.on("/config", HTTP_GET, [this](AsyncWebServerRequest *request) {
+        request->send(SPIFFS, "/config.html", String(), false, processor);
+    });
 
     // config API
     webserver.on("/wifi", HTTP_POST,
@@ -161,84 +141,147 @@ void FlipDisplayServer::setupRouting() {
     webserver.on("/word", HTTP_POST, [this](AsyncWebServerRequest *request) {
         randomWord(request);
     });
+
+    // Sonos APIs
+    webserver.on("/sonos", HTTP_POST, [this](AsyncWebServerRequest *request) {
+        updateSonosSettings(request);
+    });
+    webserver.on("/sonosGroups", HTTP_GET, [this](AsyncWebServerRequest *request) {
+        displaySonosGroups(request);
 }
 
 void FlipDisplayServer::setWifi(AsyncWebServerRequest *request) {
-    if (!request->hasArg("ssid") || !request->hasArg("pass")) {
-        request->send(400, "text/plain", "REQUIRES ARGUMENTS: ssid/pass");
-        return;
-    }
+        if (!request->hasArg("ssid") || !request->hasArg("pass")) {
+            request->send(400, "text/plain", "REQUIRES ARGUMENTS: ssid/pass");
+            return;
+        }
 
-    _ssid = request->arg("ssid").c_str();
-    _pass = request->arg("pass").c_str();
+        _ssid = request->arg("ssid");
+        _pass = request->arg("pass");
 
-    writeFile(SPIFFS, _ssidPath, _ssid.c_str());
-    writeFile(SPIFFS, _passPath, _pass.c_str());
+        FlipDisplayConfig::setPersistedValue(
+            FlipDisplayConfig::ConfigKey::WIFI_SSID, _ssid.c_str());
+        FlipDisplayConfig::setPersistedValue(
+            FlipDisplayConfig::ConfigKey::WIFI_PASSWORD, _pass.c_str());
 
-    Serial.print("SSID set to: ");
-    Serial.println(_ssid);
+        Serial.print("SSID set to: ");
+        Serial.println(_ssid);
 
-    request->send(SPIFFS, "/wifi-success.html", "text/html");
+        request->send(SPIFFS, "/success-restart.html", String(), false,
+                      processor);
 
-    delay(3000);
-
-    ESP.restart();
+        _display->triggerRestart(3);
 }
 
 void FlipDisplayServer::enableDisplayMotors(AsyncWebServerRequest *request) {
-    _display.enable(true);
-    request->send(200, "text/html", "ACK");
+        _display->enable(true);
+        request->send(200, "text/html", "ACK");
 }
 
 void FlipDisplayServer::disableDisplayMotors(AsyncWebServerRequest *request) {
-    _display.disable(true);
-    request->send(200, "text/html", "ACK");
+        _display->disable(true);
+        request->send(200, "text/html", "ACK");
 }
 
 void FlipDisplayServer::homeDisplay(AsyncWebServerRequest *request) {
-    _display.home();
-    request->send(200, "text/html", "ACK");
+        _display->home();
+        request->send(200, "text/html", "ACK");
 }
 
 void FlipDisplayServer::stepCharacter(AsyncWebServerRequest *request) {
-    if (request->hasArg("character") == false) {
-        // handle error here
-        Serial.println("FAIL");
-        request->send(400, "text/html", "REQUIRES ARGUMENT 'character'");
-        return;
-    }
+        if (request->hasArg("character") == false) {
+            Serial.println("FAIL");
+            request->send(400, "text/html", "REQUIRES ARGUMENT 'character'");
+            return;
+        }
 
-    int characterIndex = request->arg("character").toInt();
-    int offsetPosition = _display.stepCharacter(characterIndex);
+        int characterIndex = request->arg("character").toInt();
+        int offsetPosition = _display->stepCharacter(characterIndex);
 
-    Serial.print("characterIndex: ");
-    Serial.println(characterIndex);
+        Serial.print("characterIndex: ");
+        Serial.println(characterIndex);
 
-    Serial.print("offsetPosition: ");
-    Serial.println(offsetPosition);
+        Serial.print("offsetPosition: ");
+        Serial.println(offsetPosition);
 
-    request->send(200, "text/html", String(offsetPosition));
+        request->send(200, "text/html", String(offsetPosition));
 }
 
 void FlipDisplayServer::setDisplay(AsyncWebServerRequest *request) {
-    if (request->hasArg("text") == false) {
-        // handle error here
-        Serial.println("FAIL");
-        request->send(400, "text/html", "REQUIRES ARGUMENT 'text'");
-        return;
-    }
+        if (request->hasArg("text") == false) {
+            Serial.println("FAIL");
+            request->send(400, "text/html", "REQUIRES ARGUMENT 'text'");
+            return;
+        }
 
-    String body = request->arg("text");
-    _display.setDisplay(body);
+        String body = request->arg("text");
+        _display->setDisplay(body);
 
-    // Respond to the client
-    request->send(200, "text/html", body);
+        // Respond to the client
+        request->send(200, "text/html", body);
 }
 
 void FlipDisplayServer::randomWord(AsyncWebServerRequest *request) {
-    String word = words[random(0, WORD_COUNT)];
-    _display.setDisplay(word);
+        String word = words[random(0, WORD_COUNT)];
+        _display->setDisplay(word);
 
-    // Respond to the client
-    request->send(200, "text/html", word);
+        // Respond to the client
+        request->send(200, "text/html", word);
+}
+
+void FlipDisplayServer::updateSonosSettings(AsyncWebServerRequest *request) {
+        if (request->hasArg("access_token")) {
+            String access_token = request->arg("access_token");
+            FlipDisplayConfig::setPersistedValue(
+                FlipDisplayConfig::ConfigKey::SONOS_ACCESS_TOKEN,
+                access_token.c_str());
+
+            Serial.print("Stored access_token: ");
+            Serial.println(access_token);
+        }
+
+        if (request->hasArg("group_id")) {
+            String group_id = request->arg("group_id");
+            FlipDisplayConfig::setPersistedValue(
+                FlipDisplayConfig::ConfigKey::SONOS_GROUP_ID, group_id.c_str());
+
+            Serial.print("Stored group_id: ");
+            Serial.println(group_id);
+        }
+
+        request->send(SPIFFS, "/success-restart.html", String(), false,
+                      processor);
+
+        _display->triggerRestart(3);
+}
+
+void FlipDisplayServer::displaySonosGroups(AsyncWebServerRequest *request) {
+        if (WiFi.status() == WL_CONNECTED) {
+            String url = "https://api.ws.sonos.com/control/api/v1/households/" +
+                         String(SONOS_HOUSEHOLD_ID) + "/groups";
+
+            HTTPClient http;
+            http.begin(url.c_str());
+
+            http.addHeader(
+                "Authorization",
+                "Bearer " +
+                    String(FlipDisplayConfig::getPersistedValue(
+                        FlipDisplayConfig::ConfigKey::SONOS_ACCESS_TOKEN)));
+            http.addHeader("Content-Type", "application/json");
+
+            int httpCode = http.GET();
+
+            if (httpCode == 0) {
+#if DEBUG_RESPONSES
+                Serial.println("http failed");
+#endif
+                return;
+            }
+
+            String payload = http.getString();
+            request->send(200, "text/html", payload);
+
+            http.end();
+        }
 }

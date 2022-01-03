@@ -5,7 +5,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#include "Config.h"
+#include "FlipDisplayConfig.h"
 #include "FlipDisplayLerp.h"
 
 class FlipDisplayCharacter {

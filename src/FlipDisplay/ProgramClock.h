@@ -9,15 +9,15 @@
 const int GMT_OFFSET = -5;
 
 class ProgramClock {
-    public:
+   public:
     ProgramClock();
-    ProgramClock(FlipDisplay display);
+    ProgramClock(FlipDisplay *display);
 
     void setup();
     void run(bool buttonOne, bool buttonTwo);
-    
+
    private:
-    FlipDisplay _display;
+    FlipDisplay *_display;
     unsigned long _lastRunTime = 0;
 
     void setTimeByNTP();

@@ -66,7 +66,39 @@
             </form>
 
             <h2>Configure Sonos</h2>
-            <a href="https://api.sonos.com/login/v3/oauth?client_id=a69370bf-5714-410b-be03-9880cdc42fe9&response_type=code&state=testState&scope=playback-control-all&redirect_uri=https%3A%2F%2Fryan-bateman.com%2Fconfig.html">Authorize</a>
+            <h3>Configure Auth</h3>
+            Auth cannot be integrated because ESP32 cannot currently run ssl. I could set up another server and ping this, but that'd be annoying...
+            <br/><br/>
+            
+            First Click this url:<br/>
+            <a href="https://api.sonos.com/login/v3/oauth?client_id=%SONOS_API_KEY%&response_type=code&state=testState&scope=playback-control-all&redirect_uri=%SONOS_REDIRECT_URL%" target="_blank">Authorize</a>
+            <br/><br/>
+
+            It redirects to a url with a "code" parameter. Use this command to get an access token, and save that in the field below:<br/>
+            <pre><code>curl -X POST -H "Content-Type: application/x-www-form-urlencoded;charset=utf-8" -H "Authorization: Basic {%SONOS_API_AUTH_B64%}" "https://api.sonos.com/login/v3/oauth/access" -d "grant_type=authorization_code&code=[INSERT_CODE_HERE]&redirect_uri=https://ryan-bateman.com/"</code></pre>
+            <br/>
+
+            <form class='form-inline' method='POST' action='/sonos'>
+                <div class="form-group">
+                    <label>Access Token:</label>
+                    <input type='text' name='access_token' class='form-control' />
+                </div>
+
+                <input type="submit" value="Save" class='btn btn-primary'>
+            </form>
+
+            <h3>Configure Groups</h3>
+            <a href="/sonosGroups" target="_blank">Get Groups</a>
+            <br/><br/>
+
+            <form class='form-inline' method='POST' action='/sonos'>
+                <div class="form-group">
+                    <label>Sonos Group:</label>
+                    <input type='text' name='group_id' class='form-control' />
+                </div>
+
+                <input type="submit" value="Save" class='btn btn-primary'>
+            </form>
 
         </div>
     </div>
