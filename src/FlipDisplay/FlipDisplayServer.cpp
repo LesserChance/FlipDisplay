@@ -148,140 +148,141 @@ void FlipDisplayServer::setupRouting() {
     });
     webserver.on("/sonosGroups", HTTP_GET, [this](AsyncWebServerRequest *request) {
         displaySonosGroups(request);
+    });
 }
 
 void FlipDisplayServer::setWifi(AsyncWebServerRequest *request) {
-        if (!request->hasArg("ssid") || !request->hasArg("pass")) {
-            request->send(400, "text/plain", "REQUIRES ARGUMENTS: ssid/pass");
-            return;
-        }
+    if (!request->hasArg("ssid") || !request->hasArg("pass")) {
+        request->send(400, "text/plain", "REQUIRES ARGUMENTS: ssid/pass");
+        return;
+    }
 
-        _ssid = request->arg("ssid");
-        _pass = request->arg("pass");
+    _ssid = request->arg("ssid");
+    _pass = request->arg("pass");
 
-        FlipDisplayConfig::setPersistedValue(
-            FlipDisplayConfig::ConfigKey::WIFI_SSID, _ssid.c_str());
-        FlipDisplayConfig::setPersistedValue(
-            FlipDisplayConfig::ConfigKey::WIFI_PASSWORD, _pass.c_str());
+    FlipDisplayConfig::setPersistedValue(
+        FlipDisplayConfig::ConfigKey::WIFI_SSID, _ssid.c_str());
+    FlipDisplayConfig::setPersistedValue(
+        FlipDisplayConfig::ConfigKey::WIFI_PASSWORD, _pass.c_str());
 
-        Serial.print("SSID set to: ");
-        Serial.println(_ssid);
+    Serial.print("SSID set to: ");
+    Serial.println(_ssid);
 
-        request->send(SPIFFS, "/success-restart.html", String(), false,
-                      processor);
+    request->send(SPIFFS, "/success-restart.html", String(), false,
+                    processor);
 
-        _display->triggerRestart(3);
+    _display->triggerRestart(3);
 }
 
 void FlipDisplayServer::enableDisplayMotors(AsyncWebServerRequest *request) {
-        _display->enable(true);
-        request->send(200, "text/html", "ACK");
+    _display->enable(true);
+    request->send(200, "text/html", "ACK");
 }
 
 void FlipDisplayServer::disableDisplayMotors(AsyncWebServerRequest *request) {
-        _display->disable(true);
-        request->send(200, "text/html", "ACK");
+    _display->disable(true);
+    request->send(200, "text/html", "ACK");
 }
 
 void FlipDisplayServer::homeDisplay(AsyncWebServerRequest *request) {
-        _display->home();
-        request->send(200, "text/html", "ACK");
+    _display->home();
+    request->send(200, "text/html", "ACK");
 }
 
 void FlipDisplayServer::stepCharacter(AsyncWebServerRequest *request) {
-        if (request->hasArg("character") == false) {
-            Serial.println("FAIL");
-            request->send(400, "text/html", "REQUIRES ARGUMENT 'character'");
-            return;
-        }
+    if (request->hasArg("character") == false) {
+        Serial.println("FAIL");
+        request->send(400, "text/html", "REQUIRES ARGUMENT 'character'");
+        return;
+    }
 
-        int characterIndex = request->arg("character").toInt();
-        int offsetPosition = _display->stepCharacter(characterIndex);
+    int characterIndex = request->arg("character").toInt();
+    int offsetPosition = _display->stepCharacter(characterIndex);
 
-        Serial.print("characterIndex: ");
-        Serial.println(characterIndex);
+    Serial.print("characterIndex: ");
+    Serial.println(characterIndex);
 
-        Serial.print("offsetPosition: ");
-        Serial.println(offsetPosition);
+    Serial.print("offsetPosition: ");
+    Serial.println(offsetPosition);
 
-        request->send(200, "text/html", String(offsetPosition));
+    request->send(200, "text/html", String(offsetPosition));
 }
 
 void FlipDisplayServer::setDisplay(AsyncWebServerRequest *request) {
-        if (request->hasArg("text") == false) {
-            Serial.println("FAIL");
-            request->send(400, "text/html", "REQUIRES ARGUMENT 'text'");
-            return;
-        }
+    if (request->hasArg("text") == false) {
+        Serial.println("FAIL");
+        request->send(400, "text/html", "REQUIRES ARGUMENT 'text'");
+        return;
+    }
 
-        String body = request->arg("text");
-        _display->setDisplay(body);
+    String body = request->arg("text");
+    _display->setDisplay(body);
 
-        // Respond to the client
-        request->send(200, "text/html", body);
+    // Respond to the client
+    request->send(200, "text/html", body);
 }
 
 void FlipDisplayServer::randomWord(AsyncWebServerRequest *request) {
-        String word = words[random(0, WORD_COUNT)];
-        _display->setDisplay(word);
+    String word = words[random(0, WORD_COUNT)];
+    _display->setDisplay(word);
 
-        // Respond to the client
-        request->send(200, "text/html", word);
+    // Respond to the client
+    request->send(200, "text/html", word);
 }
 
 void FlipDisplayServer::updateSonosSettings(AsyncWebServerRequest *request) {
-        if (request->hasArg("access_token")) {
-            String access_token = request->arg("access_token");
-            FlipDisplayConfig::setPersistedValue(
-                FlipDisplayConfig::ConfigKey::SONOS_ACCESS_TOKEN,
-                access_token.c_str());
+    if (request->hasArg("access_token")) {
+        String access_token = request->arg("access_token");
+        FlipDisplayConfig::setPersistedValue(
+            FlipDisplayConfig::ConfigKey::SONOS_ACCESS_TOKEN,
+            access_token.c_str());
 
-            Serial.print("Stored access_token: ");
-            Serial.println(access_token);
-        }
+        Serial.print("Stored access_token: ");
+        Serial.println(access_token);
+    }
 
-        if (request->hasArg("group_id")) {
-            String group_id = request->arg("group_id");
-            FlipDisplayConfig::setPersistedValue(
-                FlipDisplayConfig::ConfigKey::SONOS_GROUP_ID, group_id.c_str());
+    if (request->hasArg("group_id")) {
+        String group_id = request->arg("group_id");
+        FlipDisplayConfig::setPersistedValue(
+            FlipDisplayConfig::ConfigKey::SONOS_GROUP_ID, group_id.c_str());
 
-            Serial.print("Stored group_id: ");
-            Serial.println(group_id);
-        }
+        Serial.print("Stored group_id: ");
+        Serial.println(group_id);
+    }
 
-        request->send(SPIFFS, "/success-restart.html", String(), false,
-                      processor);
+    request->send(SPIFFS, "/success-restart.html", String(), false,
+                    processor);
 
-        _display->triggerRestart(3);
+    _display->triggerRestart(3);
 }
 
 void FlipDisplayServer::displaySonosGroups(AsyncWebServerRequest *request) {
-        if (WiFi.status() == WL_CONNECTED) {
-            String url = "https://api.ws.sonos.com/control/api/v1/households/" +
-                         String(SONOS_HOUSEHOLD_ID) + "/groups";
+    if (WiFi.status() == WL_CONNECTED) {
+        String url = "https://api.ws.sonos.com/control/api/v1/households/" +
+                        String(SONOS_HOUSEHOLD_ID) + "/groups";
 
-            HTTPClient http;
-            http.begin(url.c_str());
+        HTTPClient http;
+        http.begin(url.c_str());
 
-            http.addHeader(
-                "Authorization",
-                "Bearer " +
-                    String(FlipDisplayConfig::getPersistedValue(
-                        FlipDisplayConfig::ConfigKey::SONOS_ACCESS_TOKEN)));
-            http.addHeader("Content-Type", "application/json");
+        http.addHeader(
+            "Authorization",
+            "Bearer " +
+                String(FlipDisplayConfig::getPersistedValue(
+                    FlipDisplayConfig::ConfigKey::SONOS_ACCESS_TOKEN)));
+        http.addHeader("Content-Type", "application/json");
 
-            int httpCode = http.GET();
+        int httpCode = http.GET();
 
-            if (httpCode == 0) {
+        if (httpCode == 0) {
 #if DEBUG_RESPONSES
-                Serial.println("http failed");
+            Serial.println("http failed");
 #endif
-                return;
-            }
-
-            String payload = http.getString();
-            request->send(200, "text/html", payload);
-
-            http.end();
+            return;
         }
+
+        String payload = http.getString();
+        request->send(200, "text/html", payload);
+
+        http.end();
+    }
 }
