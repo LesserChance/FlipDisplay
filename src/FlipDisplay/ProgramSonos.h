@@ -36,6 +36,7 @@ class ProgramSonos {
     void poll();
     void resetToken();
     void getCurrentlyPlayingArtist();
+    void cleanArtistString();
 };
 
 #endif

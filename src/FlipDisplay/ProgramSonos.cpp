@@ -174,6 +174,20 @@ void ProgramSonos::getCurrentlyPlayingArtist() {
 #endif
 
     _currentArtist = jsonResponse["currentItem"]["track"]["artist"]["name"];
+    cleanArtistString();
+
+#if DEBUG_RESPONSES
+    Serial.print(jsonResponse["currentItem"]["track"]["artist"]["name"]);
+    Serial.print(" => ");
+    Serial.println(_currentArtist);
+#endif
 
     http.end();
+}
+
+void ProgramSonos::cleanArtistString() {
+    _currentArtist.toUpperCase();
+    if (_currentArtist.startsWith("THE ")) {
+        _currentArtist = _currentArtist.substring(4);
+    }
 }
