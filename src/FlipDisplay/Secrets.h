@@ -15,6 +15,7 @@ extern const char* SONOS_REDIRECT_URL;
 extern const char* DEFAULT_WIFI_SSID;
 extern const char* DEFAULT_WIFI_PASSWORD;
 extern const char* DEFAULT_SONOS_ACCESS_TOKEN;
+extern const char* DEFAULT_SONOS_RESET_TOKEN;
 extern const char* DEFAULT_SONOS_GROUP_ID;
 
 extern const int WORD_COUNT;

@@ -18,7 +18,7 @@ FlipDisplayServer::FlipDisplayServer(FlipDisplay *display) {
     _display = display;
 }
 
-void FlipDisplayServer::setup() {
+void FlipDisplayServer::setupServer() {
     initSPIFFS();
 
     // Load values saved in SPIFFS
@@ -143,12 +143,16 @@ void FlipDisplayServer::setupRouting() {
     });
 
     // Sonos APIs
+    webserver.on(
+        "/updateSonosAccess", HTTP_GET,
+        [this](AsyncWebServerRequest *request) { updateSonosAccess(request); });
     webserver.on("/sonos", HTTP_POST, [this](AsyncWebServerRequest *request) {
         updateSonosSettings(request);
     });
-    webserver.on("/sonosGroups", HTTP_GET, [this](AsyncWebServerRequest *request) {
-        displaySonosGroups(request);
-    });
+    webserver.on("/sonosGroups", HTTP_GET,
+                 [this](AsyncWebServerRequest *request) {
+                     displaySonosGroups(request);
+                 });
 }
 
 void FlipDisplayServer::setWifi(AsyncWebServerRequest *request) {
@@ -168,8 +172,7 @@ void FlipDisplayServer::setWifi(AsyncWebServerRequest *request) {
     Serial.print("SSID set to: ");
     Serial.println(_ssid);
 
-    request->send(SPIFFS, "/success-restart.html", String(), false,
-                    processor);
+    request->send(SPIFFS, "/success-restart.html", String(), false, processor);
 
     _display->triggerRestart(3);
 }
@@ -230,15 +233,48 @@ void FlipDisplayServer::randomWord(AsyncWebServerRequest *request) {
     request->send(200, "text/html", word);
 }
 
+void FlipDisplayServer::updateSonosAccess(AsyncWebServerRequest *request) {
+    String code = request->arg("code");
+    Serial.print("code: ");
+    Serial.println(code);
+
+    String curl =
+        "curl -X POST -H \"Content-Type:"
+        " application/x-www-form-urlencoded;charset=utf-8\""
+        " -H \"Authorization: Basic {" +
+        String(SONOS_API_AUTH_B64) +
+        "}\""
+        " \"https://api.sonos.com/login/v3/oauth/access\""
+        " -d \"grant_type=authorization_code&code=" +
+        code +
+        "&redirect_uri=https://ryan-bateman.com/\"";
+
+        request->send(200, "text/html", curl);
+}
+
 void FlipDisplayServer::updateSonosSettings(AsyncWebServerRequest *request) {
     if (request->hasArg("access_token")) {
         String access_token = request->arg("access_token");
-        FlipDisplayConfig::setPersistedValue(
-            FlipDisplayConfig::ConfigKey::SONOS_ACCESS_TOKEN,
-            access_token.c_str());
+        if (access_token != "") {
+            FlipDisplayConfig::setPersistedValue(
+                FlipDisplayConfig::ConfigKey::SONOS_ACCESS_TOKEN,
+                access_token.c_str());
 
-        Serial.print("Stored access_token: ");
-        Serial.println(access_token);
+            Serial.print("Stored access_token: ");
+            Serial.println(access_token);
+        }
+    }
+
+    if (request->hasArg("reset_token")) {
+        String reset_token = request->arg("reset_token");
+        if (reset_token != "") {
+            FlipDisplayConfig::setPersistedValue(
+                FlipDisplayConfig::ConfigKey::SONOS_RESET_TOKEN,
+                reset_token.c_str());
+
+            Serial.print("Stored reset: ");
+            Serial.println(reset_token);
+        }
     }
 
     if (request->hasArg("group_id")) {
@@ -250,8 +286,7 @@ void FlipDisplayServer::updateSonosSettings(AsyncWebServerRequest *request) {
         Serial.println(group_id);
     }
 
-    request->send(SPIFFS, "/success-restart.html", String(), false,
-                    processor);
+    request->send(SPIFFS, "/success-restart.html", String(), false, processor);
 
     _display->triggerRestart(3);
 }
@@ -259,19 +294,18 @@ void FlipDisplayServer::updateSonosSettings(AsyncWebServerRequest *request) {
 void FlipDisplayServer::displaySonosGroups(AsyncWebServerRequest *request) {
     if (WiFi.status() == WL_CONNECTED) {
         String url = "https://api.ws.sonos.com/control/api/v1/households/" +
-                        String(SONOS_HOUSEHOLD_ID) + "/groups";
+                     String(SONOS_HOUSEHOLD_ID) + "/groups";
 
         HTTPClient http;
         http.begin(url.c_str());
 
         http.addHeader(
             "Authorization",
-            "Bearer " +
-                String(FlipDisplayConfig::getPersistedValue(
-                    FlipDisplayConfig::ConfigKey::SONOS_ACCESS_TOKEN)));
+            "Bearer " + String(FlipDisplayConfig::getPersistedValue(
+                            FlipDisplayConfig::ConfigKey::SONOS_ACCESS_TOKEN)));
         http.addHeader("Content-Type", "application/json");
 
-        int httpCode = http.GET();
+        int httpCode = http.sendRequest("GET");
 
         if (httpCode == 0) {
 #if DEBUG_RESPONSES

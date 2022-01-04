@@ -69,11 +69,11 @@
             Auth cannot be integrated because ESP32 cannot currently run ssl. I could set up another server and ping this, but that'd be annoying...
             <br/><br/>
             
-            <b>Step 1: </b><a href="https://api.sonos.com/login/v3/oauth?client_id=%SONOS_API_KEY%&response_type=code&state=testState&scope=playback-control-all&redirect_uri=%SONOS_REDIRECT_URL%" target="_blank">Authorize Sonos</a>
+            <b>Step 1: </b><a href="https://api.sonos.com/login/v3/oauth?client_id=%SONOS_API_KEY%&response_type=code&state=testState&scope=playback-control-all&redirect_uri=%SERVER_URL%/updateSonosAccess" target="_blank">Authorize Sonos</a>
             <br/><br/>
 
             <b>Step 2: Get a new access token</b>
-            It redirects to a url with a "code" parameter. Use this command to get an access token, and save that in the field below:<br/>
+            It redirects to a url with a "code" parameter. Use this command to get an access and reset tokens, and save that in the fields below:<br/>
             <pre><code>curl -X POST -H "Content-Type: application/x-www-form-urlencoded;charset=utf-8" -H "Authorization: Basic {%SONOS_API_AUTH_B64%}" "https://api.sonos.com/login/v3/oauth/access" -d "grant_type=authorization_code&code=[INSERT_CODE_HERE]&redirect_uri=https://ryan-bateman.com/"</code></pre>
             <br/>
 
@@ -82,6 +82,11 @@
                 <div class="form-group">
                     <label>Access Token:</label>
                     <input type='text' name='access_token' class='form-control' />
+                </div>
+
+                <div class="form-group">
+                    <label>Reset Token:</label>
+                    <input type='text' name='reset_token' class='form-control' />
                 </div>
 
                 <input type="submit" value="Save" class='btn btn-primary'>

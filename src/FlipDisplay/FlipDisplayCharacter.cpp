@@ -7,7 +7,7 @@
  *************************************/
 
 FlipDisplayCharacter::FlipDisplayCharacter(int characterIndex,
-                                           uint8_t startOffset) {
+                                           int startOffset) {
     _state = FlipDisplayCharacterState::MOTOR_OFF;
     _phase = LOW;
 

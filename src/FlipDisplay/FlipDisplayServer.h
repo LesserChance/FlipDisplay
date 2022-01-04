@@ -5,6 +5,8 @@
 #include <AsyncTCP.h>
 #include <ESPAsyncWebServer.h>
 #include <HTTPClient.h>
+#include <JSON.h>
+#include <JSONVar.h>
 #include <SPIFFS.h>
 #include <WiFi.h>
 
@@ -18,7 +20,7 @@ class FlipDisplayServer {
     FlipDisplayServer();
     FlipDisplayServer(FlipDisplay *display);
 
-    void setup();
+    void setupServer();
 
    private:
     FlipDisplay *_display;
@@ -39,6 +41,7 @@ class FlipDisplayServer {
     void stepCharacter(AsyncWebServerRequest *request);
     void randomWord(AsyncWebServerRequest *request);
 
+    void updateSonosAccess(AsyncWebServerRequest *request);
     void updateSonosSettings(AsyncWebServerRequest *request);
     void displaySonosGroups(AsyncWebServerRequest *request);
 };

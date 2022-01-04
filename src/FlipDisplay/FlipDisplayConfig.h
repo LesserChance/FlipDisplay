@@ -49,17 +49,18 @@
 #define MIN_STEPS_PER_LERP 200             // if a lerp is below this number of steps, itll do a full loop
 #define PAUSE_ENABLED_DURATION 1000000 * 5 // how long to wait (microseconds) before disabling the motor entirely when paused
 
-#define SCROLLING_ENABLED 1                // should the display scroll for strings that are too large?
+#define SCROLLING_ENABLED 0                // should the display scroll for strings that are too large?
 #define WAIT_TO_SCROLL 1000000 * 1         // how long should we pause until we scroll to the next set of characters
 #define CHARS_TO_SCROLL 3                  // how many characters should scroll at a time
 
 const int STEP_PIN[TOTAL_CHARACTERS] = {stepPin1, stepPin2, stepPin3, stepPin4, stepPin5, stepPin6};
 const int LOOP_PIN[TOTAL_CHARACTERS] = {loopPin1, loopPin2, loopPin3, loopPin4, loopPin5, loopPin6};
-const int CHARACTER_OFFSET[TOTAL_CHARACTERS] = {45,38,37,54,34,34};
+const int CHARACTER_OFFSET[TOTAL_CHARACTERS] = {24,48,37,39,323,34};
 
 #define WIFI_SSID_PATH "/ssid.txt"
 #define WIFI_PASSWORD_PATH "/pass.txt"
 #define SONOS_ACCESS_TOKEN_PATH "/sonos_access_token.txt"
+#define SONOS_RESET_TOKEN_PATH "/sonos_reset_token.txt"
 #define SONOS_GROUP_ID_PATH "/sonos_group_id.txt"
 
 class FlipDisplayConfig {
@@ -69,6 +70,7 @@ class FlipDisplayConfig {
         WIFI_PASSWORD = 1,
         SONOS_ACCESS_TOKEN = 2,
         SONOS_GROUP_ID = 3,
+        SONOS_RESET_TOKEN = 4
     } ConfigKey;
 
     static void initializePersistedValues();

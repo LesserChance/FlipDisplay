@@ -9,6 +9,8 @@ void FlipDisplayConfig::initializePersistedValues() {
     setPersistedValue(ConfigKey::WIFI_PASSWORD, DEFAULT_WIFI_PASSWORD);
     setPersistedValue(ConfigKey::SONOS_ACCESS_TOKEN,
                       DEFAULT_SONOS_ACCESS_TOKEN);
+    setPersistedValue(ConfigKey::SONOS_RESET_TOKEN,
+                      DEFAULT_SONOS_RESET_TOKEN);
     setPersistedValue(ConfigKey::SONOS_GROUP_ID, DEFAULT_SONOS_GROUP_ID);
 }
 
@@ -26,6 +28,10 @@ String FlipDisplayConfig::getPersistedValue(FlipDisplayConfig::ConfigKey key) {
 
         case ConfigKey::SONOS_ACCESS_TOKEN:
             return readFile(SPIFFS, SONOS_ACCESS_TOKEN_PATH);
+            break;
+
+        case ConfigKey::SONOS_RESET_TOKEN:
+            return readFile(SPIFFS, SONOS_RESET_TOKEN_PATH);
             break;
 
         case ConfigKey::SONOS_GROUP_ID:
@@ -54,6 +60,10 @@ void FlipDisplayConfig::setPersistedValue(FlipDisplayConfig::ConfigKey key,
             writeFile(SPIFFS, SONOS_ACCESS_TOKEN_PATH, message);
             break;
 
+        case ConfigKey::SONOS_RESET_TOKEN:
+            writeFile(SPIFFS, SONOS_RESET_TOKEN_PATH, message);
+            break;
+
         case ConfigKey::SONOS_GROUP_ID:
             writeFile(SPIFFS, SONOS_GROUP_ID_PATH, message);
             break;
@@ -74,6 +84,10 @@ void FlipDisplayConfig::deletePersistedValue(FlipDisplayConfig::ConfigKey key) {
 
         case ConfigKey::SONOS_ACCESS_TOKEN:
             deleteFile(SPIFFS, SONOS_ACCESS_TOKEN_PATH);
+            break;
+
+        case ConfigKey::SONOS_RESET_TOKEN:
+            deleteFile(SPIFFS, SONOS_RESET_TOKEN_PATH);
             break;
 
         case ConfigKey::SONOS_GROUP_ID:

@@ -19,7 +19,7 @@ class ProgramSonos {
     ProgramSonos();
     ProgramSonos(FlipDisplay *display);
 
-    void setup();
+    void setupProgram();
     void run(bool buttonOne, bool buttonTwo);
 
    private:
@@ -30,6 +30,7 @@ class ProgramSonos {
     String _currentArtist;
 
     String _accessToken;
+    String _resetToken;
     String _groupId;
 
     void poll();

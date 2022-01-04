@@ -27,6 +27,12 @@ class FlipDisplay {
     FlipDisplay();
 
     /**
+     * @brief initialize the display
+     * @param goHome if ture, home the display immediately
+     */
+    void setupDisplay(bool goHome = true);
+
+    /**
      * @brief Re-home the entire display
      * Using the buttons on each character, go past the button if on it, then to
      * the button, then to the starting offset this gets each character to a
@@ -83,6 +89,13 @@ class FlipDisplay {
      */
     void triggerRestart(int delay);
 
+    /**
+     * @brief 
+     * @return true if the display has entirely finished its current string
+     * @return false if any characters are currently changing or waiting to scroll
+     */
+    bool canDisplayBeUpdated();
+
    private:
     /*************************************
      * PROPERTIES
@@ -110,7 +123,7 @@ class FlipDisplay {
     int _currentDisplayScrollPosition;
 
     // the next time we should check to see if the display should scroll
-    unsigned long _nextScrollTime;
+    unsigned long _nextScrollTime = 0;
 
     // true when the display is homing at least one character
     bool _isHoming = false;

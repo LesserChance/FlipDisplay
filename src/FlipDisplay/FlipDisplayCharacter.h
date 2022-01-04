@@ -25,7 +25,7 @@ class FlipDisplayCharacter {
         MOTOR_OFF = 5,
     } FlipDisplayCharacterState;
 
-    FlipDisplayCharacter(int characterIndex, uint8_t startOffset = 0);
+    FlipDisplayCharacter(int characterIndex, int startOffset = 0);
 
     /**
      * @brief the main loop function
@@ -152,7 +152,7 @@ class FlipDisplayCharacter {
 
     // how far to offset from the button state change to reach the start point
     // (steps)
-    uint8_t _startOffset;
+    int _startOffset;
 
     // the next time (microseconds) the character can step
     unsigned long _nextStepTime;

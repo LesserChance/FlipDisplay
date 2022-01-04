@@ -5,9 +5,15 @@
 /*************************************
  * CONSTRUCTOR
  *************************************/
+FlipDisplay::FlipDisplay() {}
 
-FlipDisplay::FlipDisplay() {
+/*************************************
+ * PUBLIC
+ *************************************/
+
+void FlipDisplay::setupDisplay(bool goHome) {
     disable(true);
+
     for (int i = START_CHARACTER; i < CHARACTER_COUNT; i++) {
         _characters[i] = new FlipDisplayCharacter(i, CHARACTER_OFFSET[i]);
     }
@@ -16,16 +22,24 @@ FlipDisplay::FlipDisplay() {
     _scrollAnimationType = AnimationType::CASCADE_RIGHT;
 
     _type = _setAnimationType;
-}
 
-/*************************************
- * PUBLIC
- *************************************/
+    if (goHome) {
+        run();
+        home();
+    }
+}
 
 void FlipDisplay::home() {
     if (_isHoming) {
 #if DEBUG_LOOP
         Serial.println("HOMING ALREADY IN PROGRESS, NOT STARTNG");
+#endif
+        return;
+    }
+    
+    if (!canDisplayBeUpdated()) {
+#if DEBUG_LOOP
+        Serial.println("FAILED TO UPDATE DISPLAY, CURRENTLY RUNNING");
 #endif
         return;
     }
@@ -45,7 +59,7 @@ void FlipDisplay::home() {
 
 void FlipDisplay::run() {
     _currentTime = micros();
-    
+
     if (_triggerRestart) {
         if (_currentTime > _triggerRestart) {
             Serial.println("RESTARTING");
@@ -72,6 +86,13 @@ void FlipDisplay::run() {
 }
 
 void FlipDisplay::setDisplay(String displayString) {
+    if (!canDisplayBeUpdated()) {
+#if DEBUG
+        Serial.println("FAILED TO UPDATE DISPLAY, CURRENTLY RUNNING");
+#endif
+        return;
+    }
+
     displayString.toUpperCase();
     if (_currentDisplay == displayString) {
         return;
@@ -129,6 +150,24 @@ void FlipDisplay::disable(bool force) {
 void FlipDisplay::triggerRestart(int delay) {
     Serial.println("TRIGGERING A RESTART");
     _triggerRestart = _currentTime + (delay * 1000000);
+}
+
+bool FlipDisplay::canDisplayBeUpdated() {
+    for (int i = START_CHARACTER; i < CHARACTER_COUNT; i++) {
+        switch (_characters[i]->getState()) {
+            case FlipDisplayCharacter::FlipDisplayCharacterState::
+                HOMING_PAST_BUTTON:
+            case FlipDisplayCharacter::FlipDisplayCharacterState::
+                HOMING_TO_BUTTON:
+            case FlipDisplayCharacter::FlipDisplayCharacterState::
+                HOMING_TO_OFFSET:
+            case FlipDisplayCharacter::FlipDisplayCharacterState::RUNNING:
+                return false;
+                break;
+        }
+    }
+
+    return (_nextScrollTime == 0);
 }
 
 /*************************************
@@ -228,6 +267,7 @@ void FlipDisplay::checkForHoming() {
 
     if (_isHoming && !isHoming) {
         _isHoming = isHoming;
+        _currentDisplay = "";
 #if DEBUG_LOOP
         Serial.println("HOMING COMPLETE");
 #endif

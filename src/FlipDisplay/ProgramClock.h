@@ -13,7 +13,7 @@ class ProgramClock {
     ProgramClock();
     ProgramClock(FlipDisplay *display);
 
-    void setup();
+    void setupProgram();
     void run(bool buttonOne, bool buttonTwo);
 
    private:
