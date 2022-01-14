@@ -4,14 +4,14 @@
 <head>
     <title>Flip Display</title>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
-    <link rel='stylesheet' href='/bootstrap.min.css'>
-    <link rel='stylesheet' href='/style.css'>
+    <link rel='stylesheet' href='./bootstrap.min.css'>
+    <link rel='stylesheet' href='./style.css'>
 </head>
 
 <body>
     <div class='container'>
         <div class='container form-container'>
-            <img src='/Flip.png' class='center-block' />
+            <img src='./Flip.png' class='center-block' />
             <br /><br />
 
             <form class='form-inline' method='POST' action='/update' target='ft'>
@@ -31,7 +31,10 @@
             <form class='f' method='POST' action='/home' target='ft'>
                 <button type='submit' class='btn btn-success'>Re-home</button>
             </form>
-
+            
+            <form class='f' method='POST' action='/power%TOGGLE_POWER%' target='ft'>
+                <button type='submit' class='btn btn-danger'>Power %TOGGLE_POWER%</button>
+            </form>
         </div>
     </div>
     <iframe name='ft' id='ft' style='display: none;'></iframe>

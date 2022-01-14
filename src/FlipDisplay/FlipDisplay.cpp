@@ -39,7 +39,7 @@ void FlipDisplay::home() {
     
     if (!canDisplayBeUpdated()) {
 #if DEBUG_LOOP
-        Serial.println("FAILED TO UPDATE DISPLAY, CURRENTLY RUNNING");
+        Serial.println("FAILED TO UPDATE DISPLAY, CURRENTLY RUNNING OR PAUSED");
 #endif
         return;
     }
@@ -58,6 +58,10 @@ void FlipDisplay::home() {
 }
 
 void FlipDisplay::run() {
+    if (!_powerOn) {
+        return;
+    }
+    
     _currentTime = micros();
 
     if (_triggerRestart) {
@@ -70,6 +74,7 @@ void FlipDisplay::run() {
     // check for any state changes we want to do before running
     checkForScroll();
     checkForEnable();
+    checkForMotorsMoving();
 
     int pauseCount = 0;
     for (int i = START_CHARACTER; i < CHARACTER_COUNT; i++) {
@@ -85,11 +90,11 @@ void FlipDisplay::run() {
     updateRegisters();
 }
 
-void FlipDisplay::setDisplay(String displayString) {
-    if (!canDisplayBeUpdated()) {
-#if DEBUG
+void FlipDisplay::setDisplay(String displayString, unsigned long minDuration, bool force) {
+    if (!force && !canDisplayBeUpdated()) {
+// #if DEBUG
         Serial.println("FAILED TO UPDATE DISPLAY, CURRENTLY RUNNING");
-#endif
+// #endif
         return;
     }
 
@@ -100,6 +105,7 @@ void FlipDisplay::setDisplay(String displayString) {
 
     _currentDisplay = displayString;
     _currentDisplayScrollPosition = 0;
+    _minDuration = minDuration;
 
 #if DEBUG
     Serial.print("SETTING DISPLAY TO: ");
@@ -147,27 +153,29 @@ void FlipDisplay::disable(bool force) {
     }
 }
 
+void FlipDisplay::setPower(bool powerOn) {
+    _powerOn = powerOn;
+}
+
+String FlipDisplay::getTogglePowerValue() {
+    if (_powerOn) {
+        return "Off";
+    }
+
+    return "On";
+}
+
 void FlipDisplay::triggerRestart(int delay) {
     Serial.println("TRIGGERING A RESTART");
-    _triggerRestart = _currentTime + (delay * 1000000);
+    _triggerRestart = _currentTime + (delay * MICROSECONDS);
 }
 
 bool FlipDisplay::canDisplayBeUpdated() {
-    for (int i = START_CHARACTER; i < CHARACTER_COUNT; i++) {
-        switch (_characters[i]->getState()) {
-            case FlipDisplayCharacter::FlipDisplayCharacterState::
-                HOMING_PAST_BUTTON:
-            case FlipDisplayCharacter::FlipDisplayCharacterState::
-                HOMING_TO_BUTTON:
-            case FlipDisplayCharacter::FlipDisplayCharacterState::
-                HOMING_TO_OFFSET:
-            case FlipDisplayCharacter::FlipDisplayCharacterState::RUNNING:
-                return false;
-                break;
-        }
+    if (_currentTime <= _acceptNextCommand) {
+        return false;
     }
 
-    return (_nextScrollTime == 0);
+    return !_areMotorsMoving && (_nextScrollTime == 0);
 }
 
 /*************************************
@@ -213,19 +221,9 @@ void FlipDisplay::checkForScroll() {
     if (SCROLLING_ENABLED && _nextScrollTime != 0 &&
         _currentTime > _nextScrollTime) {
         // if any motors are still moving, do not scroll
-        for (int i = START_CHARACTER; i < CHARACTER_COUNT; i++) {
-            switch (_characters[i]->getState()) {
-                case FlipDisplayCharacter::FlipDisplayCharacterState::
-                    HOMING_PAST_BUTTON:
-                case FlipDisplayCharacter::FlipDisplayCharacterState::
-                    HOMING_TO_BUTTON:
-                case FlipDisplayCharacter::FlipDisplayCharacterState::
-                    HOMING_TO_OFFSET:
-                case FlipDisplayCharacter::FlipDisplayCharacterState::RUNNING:
-                    // dont scroll right now
-                    _nextScrollTime += WAIT_TO_SCROLL;
-                    return;
-            }
+        if (_areMotorsMoving) {
+            _nextScrollTime += WAIT_TO_SCROLL;
+            return;
         }
 
         // all motors are paused - we're ok to scroll now
@@ -287,6 +285,35 @@ void FlipDisplay::checkForDisable() {
         disable();
     }
 }
+
+void FlipDisplay::checkForMotorsMoving() {
+    bool areMotorsMoving = false;
+
+    for (int i = START_CHARACTER; i < CHARACTER_COUNT && !areMotorsMoving; i++) {
+        switch (_characters[i]->getState()) {
+            case FlipDisplayCharacter::FlipDisplayCharacterState::
+                HOMING_PAST_BUTTON:
+            case FlipDisplayCharacter::FlipDisplayCharacterState::
+                HOMING_TO_BUTTON:
+            case FlipDisplayCharacter::FlipDisplayCharacterState::
+                HOMING_TO_OFFSET:
+            case FlipDisplayCharacter::FlipDisplayCharacterState::RUNNING:
+                areMotorsMoving = true;
+                break;
+        }
+    }
+
+    if (_areMotorsMoving && !areMotorsMoving) {
+#if DEBUG
+        Serial.println("MOTORS STOPPED MOVING");
+#endif
+        // motors stopped moving, if we should be delaying for some period of time, set that now
+        _acceptNextCommand = _currentTime + _minDuration;
+    }
+
+    _areMotorsMoving = areMotorsMoving;
+}
+
 
 bool FlipDisplay::areAllMotorsDisabled() {
     bool allMotorsDisabled = true;

@@ -3,15 +3,6 @@
 
 AsyncWebServer webserver(80);
 
-String processor(const String &var) {
-    if (var == "SERVER_URL") return SERVER_URL;
-    if (var == "SONOS_API_KEY") return SONOS_API_KEY;
-    if (var == "SONOS_API_AUTH_B64") return SONOS_API_AUTH_B64;
-    if (var == "SONOS_REDIRECT_URL") return SONOS_REDIRECT_URL;
-
-    return String();
-}
-
 FlipDisplayServer::FlipDisplayServer() {}
 
 FlipDisplayServer::FlipDisplayServer(FlipDisplay *display) {
@@ -91,7 +82,10 @@ void FlipDisplayServer::initSoftAP() {
 
     // serve the apropriate index
     webserver.on("/", HTTP_GET, [this](AsyncWebServerRequest *request) {
-        request->send(SPIFFS, "/wifi-setup.html", String(), false, processor);
+        request->send(SPIFFS, "/wifi-setup.html", String(), false,
+                      [this](const String &var) -> String {
+                          return this->processor(var);
+                      });
     });
 
     setupRouting();
@@ -102,7 +96,10 @@ void FlipDisplayServer::initSoftAP() {
 void FlipDisplayServer::initServer() {
     // serve the apropriate index
     webserver.on("/", HTTP_GET, [this](AsyncWebServerRequest *request) {
-        request->send(SPIFFS, "/index.html", String(), false, processor);
+        request->send(SPIFFS, "/index.html", String(), false,
+                      [this](const String &var) -> String {
+                          return this->processor(var);
+                      });
     });
 
     setupRouting();
@@ -110,12 +107,25 @@ void FlipDisplayServer::initServer() {
     webserver.begin();
 }
 
+String FlipDisplayServer::processor(const String &var) {
+    if (var == "SERVER_URL") return SERVER_URL;
+    if (var == "SONOS_API_KEY") return SONOS_API_KEY;
+    if (var == "SONOS_API_AUTH_B64") return SONOS_API_AUTH_B64;
+    if (var == "SONOS_REDIRECT_URL") return SONOS_REDIRECT_URL;
+    if (var == "TOGGLE_POWER") return _display->getTogglePowerValue();
+
+    return String();
+}
+
 void FlipDisplayServer::setupRouting() {
     webserver.serveStatic("/", SPIFFS, "/");
 
     // non-static pages
     webserver.on("/config", HTTP_GET, [this](AsyncWebServerRequest *request) {
-        request->send(SPIFFS, "/config.html", String(), false, processor);
+        request->send(SPIFFS, "/config.html", String(), false,
+                      [this](const String &var) -> String {
+                          return this->processor(var);
+                      });
     });
 
     // config API
@@ -127,6 +137,13 @@ void FlipDisplayServer::setupRouting() {
     webserver.on("/disable", HTTP_POST, [this](AsyncWebServerRequest *request) {
         disableDisplayMotors(request);
     });
+    webserver.on("/powerOn", HTTP_POST, [this](AsyncWebServerRequest *request) {
+        setDisplayPower(true, request);
+    });
+    webserver.on("/powerOff", HTTP_POST,
+                 [this](AsyncWebServerRequest *request) {
+                     setDisplayPower(false, request);
+                 });
 
     // Flip Display API
     webserver.on("/home", HTTP_POST, [this](AsyncWebServerRequest *request) {
@@ -172,7 +189,9 @@ void FlipDisplayServer::setWifi(AsyncWebServerRequest *request) {
     Serial.print("SSID set to: ");
     Serial.println(_ssid);
 
-    request->send(SPIFFS, "/success-restart.html", String(), false, processor);
+    request->send(
+        SPIFFS, "/success-restart.html", String(), false,
+        [this](const String &var) -> String { return this->processor(var); });
 
     _display->triggerRestart(3);
 }
@@ -184,6 +203,12 @@ void FlipDisplayServer::enableDisplayMotors(AsyncWebServerRequest *request) {
 
 void FlipDisplayServer::disableDisplayMotors(AsyncWebServerRequest *request) {
     _display->disable(true);
+    request->send(200, "text/html", "ACK");
+}
+
+void FlipDisplayServer::setDisplayPower(bool powerOn,
+                                        AsyncWebServerRequest *request) {
+    _display->setPower(powerOn);
     request->send(200, "text/html", "ACK");
 }
 
@@ -219,7 +244,7 @@ void FlipDisplayServer::setDisplay(AsyncWebServerRequest *request) {
     }
 
     String body = request->arg("text");
-    _display->setDisplay(body);
+    _display->setDisplay(body, MICROSECONDS * 30, true);
 
     // Respond to the client
     request->send(200, "text/html", body);
@@ -227,7 +252,7 @@ void FlipDisplayServer::setDisplay(AsyncWebServerRequest *request) {
 
 void FlipDisplayServer::randomWord(AsyncWebServerRequest *request) {
     String word = words[random(0, WORD_COUNT)];
-    _display->setDisplay(word);
+    _display->setDisplay(word, MICROSECONDS * 30, true);
 
     // Respond to the client
     request->send(200, "text/html", word);
@@ -246,10 +271,9 @@ void FlipDisplayServer::updateSonosAccess(AsyncWebServerRequest *request) {
         "}\""
         " \"https://api.sonos.com/login/v3/oauth/access\""
         " -d \"grant_type=authorization_code&code=" +
-        code +
-        "&redirect_uri=https://ryan-bateman.com/\"";
+        code + "&redirect_uri=https://ryan-bateman.com/\"";
 
-        request->send(200, "text/html", curl);
+    request->send(200, "text/html", curl);
 }
 
 void FlipDisplayServer::updateSonosSettings(AsyncWebServerRequest *request) {
@@ -286,7 +310,9 @@ void FlipDisplayServer::updateSonosSettings(AsyncWebServerRequest *request) {
         Serial.println(group_id);
     }
 
-    request->send(SPIFFS, "/success-restart.html", String(), false, processor);
+    request->send(
+        SPIFFS, "/success-restart.html", String(), false,
+        [this](const String &var) -> String { return this->processor(var); });
 
     _display->triggerRestart(3);
 }

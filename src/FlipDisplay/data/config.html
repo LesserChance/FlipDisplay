@@ -4,14 +4,14 @@
 <head>
     <title>Flip Display</title>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
-    <link rel='stylesheet' href='/bootstrap.min.css'>
-    <link rel='stylesheet' href='/style.css'>
+    <link rel='stylesheet' href='./bootstrap.min.css'>
+    <link rel='stylesheet' href='./style.css'>
 </head>
 
 <body>
     <div class='container'>
         <div class='container form-container'>
-            <img src='/Flip.png' class='center-block' />
+            <img src='./Flip.png' class='center-block' />
             <br /><br />
 
             <h1>Flip Display Admin</h1>
@@ -36,6 +36,14 @@
             </form>
             <form class='f' method='POST' action='/disable' target='ft'>
                 <button type='submit' class='btn btn-primary'>Disable</button>
+            </form>
+
+            <h2>Set Power</h2>
+            <form class='f' method='POST' action='/powerOn' target='ft'>
+                <button type='submit' class='btn btn-success'>Power On</button>
+            </form>
+            <form class='f' method='POST' action='/powerOff' target='ft'>
+                <button type='submit' class='btn btn-primary'>Power Off</button>
             </form>
 
             <h2>Setup Initial Offsets</h2>

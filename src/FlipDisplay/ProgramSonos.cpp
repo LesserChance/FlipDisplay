@@ -19,10 +19,10 @@ void ProgramSonos::setupProgram() {
         FlipDisplayConfig::ConfigKey::SONOS_GROUP_ID);
 }
 
-void ProgramSonos::run(bool buttonOne, bool buttonTwo) {
+void ProgramSonos::run(bool buttonOne, bool programSwitch) {
     unsigned long _currentTime = millis();
 
-    if (_displayedArtist != _currentArtist) {
+    if (programSwitch || _displayedArtist != _currentArtist) {
         _displayedArtist = _currentArtist;
         _display->setDisplay(_currentArtist);
     }

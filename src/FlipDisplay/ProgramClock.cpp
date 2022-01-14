@@ -7,16 +7,16 @@ ProgramClock::ProgramClock(FlipDisplay *display) { _display = display; }
 
 void ProgramClock::setupProgram() { setTimeByNTP(); }
 
-void ProgramClock::run(bool buttonOne, bool buttonTwo) {
+void ProgramClock::run(bool buttonOne, bool programSwitch) {
     unsigned long _currentTime = millis();
 
-    if (buttonOne || buttonTwo) {
+    if (buttonOne) {
         String word = words[random(0, WORD_COUNT)];
-        _display->setDisplay(word);
+        _display->setDisplay(word, MICROSECONDS * 30, true);
         _lastRunTime = _currentTime + 15000;
     }
 
-    if (_currentTime >= _lastRunTime + 10000) {
+    if (programSwitch || _currentTime >= _lastRunTime + 10000) {
         _display->setDisplay(getTime());
         _lastRunTime = _currentTime;
     }
@@ -37,12 +37,16 @@ String ProgramClock::getTime() {
 
     switch (timeinfo.tm_hour) {
         case 1:
+            return "one am";
+            break;
         case 13:
-            return "one";
+            return "one pm";
             break;
         case 2:
+            return "two am";
+            break;
         case 14:
-            return "two";
+            return "two pm";
             break;
         case 3:
         case 15:
@@ -57,8 +61,10 @@ String ProgramClock::getTime() {
             return "five";
             break;
         case 6:
+            return "six am";
+            break;
         case 18:
-            return "six";
+            return "six pm";
             break;
         case 7:
         case 19:
@@ -73,8 +79,10 @@ String ProgramClock::getTime() {
             return "nine";
             break;
         case 10:
+            return "ten am";
+            break;
         case 22:
-            return "ten";
+            return "ten pm";
             break;
         case 11:
         case 23:

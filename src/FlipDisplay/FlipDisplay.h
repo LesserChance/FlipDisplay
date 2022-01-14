@@ -53,8 +53,10 @@ class FlipDisplay {
      * necessary to get to the new value
      *
      * @param displayString the new string to set the display to
+     * @param minDuration how long should the display be held on this string before accepting a new command
+     * @param force if true, bypass any pause
      */
-    void setDisplay(String display);
+    void setDisplay(String display, unsigned long minDuration = 0, bool force = false);
 
     /**
      * @brief step an inidivial character once
@@ -84,6 +86,17 @@ class FlipDisplay {
     void disable(bool force = false);
 
     /**
+     * @brief enable/disable the whole display
+     */
+    void setPower(bool powerOn);
+    
+    /**
+     * @brief Get the Toggle Power Value to use to allow the front end to switch
+     * @return String 
+     */
+    String getTogglePowerValue();
+
+    /**
      * @brief restart the ESP after some delay
      * @param delay seconds to delay before restarting
      */
@@ -91,10 +104,18 @@ class FlipDisplay {
 
     /**
      * @brief 
+     * @return true if the display can be updated
+     * @return false if any characters are currently changing or waiting to
+     *               scroll or we're waiting for _acceptNextCommand
+     */
+    bool canDisplayBeUpdated();
+
+    /**
+     * @brief 
      * @return true if the display has entirely finished its current string
      * @return false if any characters are currently changing or waiting to scroll
      */
-    bool canDisplayBeUpdated();
+    bool areMotorsFinished();
 
    private:
     /*************************************
@@ -131,6 +152,9 @@ class FlipDisplay {
     // true when the display motors are all disabled
     bool _isDisabled = false;
 
+    // true when the display motors are still moving
+    bool _areMotorsMoving = false;
+
     // the output for the step pins that control motor movement (at last run)
     byte _lastStepPinRegisterOutput = 0b00000000;
 
@@ -139,6 +163,16 @@ class FlipDisplay {
 
     // the timestamp to treigger an ESP restart
     unsigned long _triggerRestart = 0;
+    
+    // once the motors are in their final position, how much long should they
+    // be held before accepting new commands
+    unsigned long _minDuration;
+    
+    // the timestamp when another command can be run
+    unsigned long _acceptNextCommand = 0;
+
+    // disable everything entirely
+    bool _powerOn = true;
 
     /*************************************
      * METHODS
@@ -178,6 +212,11 @@ class FlipDisplay {
      * @brief determine if the display needs to be disabled
      */
     void checkForDisable();
+
+    /**
+     * @brief determine if the display motors are done moving
+     */
+    void checkForMotorsMoving();
 
     /**
      * @brief determine if all the characters are in the MOTOR_OFF state

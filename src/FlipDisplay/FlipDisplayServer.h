@@ -32,10 +32,13 @@ class FlipDisplayServer {
     void initSoftAP();
     void initServer();
     void setupRouting();
+    
+    String processor(const String &var);
 
     void setWifi(AsyncWebServerRequest *request);
     void enableDisplayMotors(AsyncWebServerRequest *request);
     void disableDisplayMotors(AsyncWebServerRequest *request);
+    void setDisplayPower(bool powerOn, AsyncWebServerRequest *request);
     void homeDisplay(AsyncWebServerRequest *request);
     void setDisplay(AsyncWebServerRequest *request);
     void stepCharacter(AsyncWebServerRequest *request);

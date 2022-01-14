@@ -15,11 +15,11 @@ uint8_t buttonTwoLastState;
 unsigned long buttonOneDebounceStart = 0;
 unsigned long buttonTwoDebounceStart = 0;
 
+uint8_t currentProgram = 0;
+
 void initializeGPIO() {
-#if DEBUG || DEBUG_LOOP || DEBUG_LERP || DEBUG_RESPONSES
     Serial.begin(115200);
     Serial.println("START");
-#endif
 
     pinMode(enablePin, OUTPUT);
 
@@ -48,7 +48,7 @@ void setup() {
     initializeGPIO();
 
     display = FlipDisplay();
-    display.setupDisplay(false);
+    display.setupDisplay();
 
     server = FlipDisplayServer(&display);
     server.setupServer();
@@ -95,9 +95,19 @@ void readButtons() {
 void loop() {
     readButtons();
 
+    if (buttonTwoTriggered) {
+        currentProgram = !currentProgram;
+    }
+
     // todo: switch between active programs
-    // progClock.run(buttonOneTriggered, buttonTwoTriggered);
-    progSonos.run(buttonOneTriggered, buttonTwoTriggered);
+    switch (currentProgram) {
+        case 0:
+            progClock.run(buttonOneTriggered, buttonTwoTriggered);
+            break;
+        case 1:
+            progSonos.run(buttonOneTriggered, buttonTwoTriggered);
+            break;
+    }
 
     display.run();
 }

@@ -6,10 +6,10 @@
 
 #include "Secrets.h"
 
-#define DEBUG 1
+#define DEBUG 0
 #define DEBUG_LOOP 0
 #define DEBUG_LERP 0
-#define DEBUG_RESPONSES 1
+#define DEBUG_RESPONSES 0
 
 #define WIFI_FAIL_COUNT 20
 
@@ -42,15 +42,16 @@
 
 #define LOOP_REVERSE_OFFSET 1              // for a loop detected while running, this offset adjusts for the fact that its moving fast and oversteps
 
+#define MICROSECONDS 1000000
 #define DEBOUNCE_DURATION 50000            // how long to wait (microseconds) to debounce the loop button
 #define STEPS_PER_REVOLUTION 400           // total numbers of steps to make a full rotation
 #define POSSIBLE_CHARACTER_VALUES 40       // total number of characters that can be displayed
 #define STEPS_PER_CHARACTER 10             // how many steps to step a single character
 #define MIN_STEPS_PER_LERP 200             // if a lerp is below this number of steps, itll do a full loop
-#define PAUSE_ENABLED_DURATION 1000000 * 5 // how long to wait (microseconds) before disabling the motor entirely when paused
+#define PAUSE_ENABLED_DURATION (MICROSECONDS * 5) // how long to wait (microseconds) before disabling the motor entirely when paused
 
 #define SCROLLING_ENABLED 0                // should the display scroll for strings that are too large?
-#define WAIT_TO_SCROLL 1000000 * 1         // how long should we pause until we scroll to the next set of characters
+#define WAIT_TO_SCROLL (MICROSECONDS * 1)    // how long should we pause until we scroll to the next set of characters
 #define CHARS_TO_SCROLL 3                  // how many characters should scroll at a time
 
 const int STEP_PIN[TOTAL_CHARACTERS] = {stepPin1, stepPin2, stepPin3, stepPin4, stepPin5, stepPin6};

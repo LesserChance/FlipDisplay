@@ -14,7 +14,7 @@ class ProgramClock {
     ProgramClock(FlipDisplay *display);
 
     void setupProgram();
-    void run(bool buttonOne, bool buttonTwo);
+    void run(bool buttonOne, bool programSwitch);
 
    private:
     FlipDisplay *_display;
