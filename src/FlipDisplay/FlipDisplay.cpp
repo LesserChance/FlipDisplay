@@ -92,9 +92,9 @@ void FlipDisplay::run() {
 
 void FlipDisplay::setDisplay(String displayString, unsigned long minDuration, bool force) {
     if (!force && !canDisplayBeUpdated()) {
-// #if DEBUG
+#if DEBUG
         Serial.println("FAILED TO UPDATE DISPLAY, CURRENTLY RUNNING");
-// #endif
+#endif
         return;
     }
 

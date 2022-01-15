@@ -166,7 +166,7 @@ class FlipDisplay {
     
     // once the motors are in their final position, how much long should they
     // be held before accepting new commands
-    unsigned long _minDuration;
+    unsigned long _minDuration = 0;
     
     // the timestamp when another command can be run
     unsigned long _acceptNextCommand = 0;
