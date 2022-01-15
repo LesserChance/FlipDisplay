@@ -36,6 +36,8 @@ A motor is mounted to the bracket. The button holder is connected to the two fro
 ### Assembly 3: Circuit
 The circuit assembly is just used to house the individual PCBs.
 
+---
+
 Originally inspired from designs by [hakernia on Thingiverse](https://www.thingiverse.com/thing:2369832), but I found that the small motor was not driving well, as it'd get hot and fail, or get stuck easily. So I upgraded to heavier duty Nema17 Motorslike the ones used in 3D Printers and decided to use an actual coupler to connect the 3d printed parts to the motor.
 
 ## Supplies and Costs
