@@ -1,5 +1,7 @@
 # Flip Display
 
+https://user-images.githubusercontent.com/819400/149609962-681a9211-6ebb-46da-95a2-772721c91d99.mp4
+
 This is a 3D-printed flip character display. Each character utilizes a position sensor for loop detection in order to ensure accuract positioning of character display. The display is capable of a few different animation styles, e.g. all arriving at the same time, or cascading left-to-right. It has a simple web-based UI and API, and is fairly easy to construct.
 
 ## UI
@@ -33,6 +35,8 @@ A motor is mounted to the bracket. The button holder is connected to the two fro
 
 ### Assembly 3: Circuit
 The circuit assembly is just used to house the individual PCBs.
+
+---
 
 Originally inspired from designs by [hakernia on Thingiverse](https://www.thingiverse.com/thing:2369832), but I found that the small motor was not driving well, as it'd get hot and fail, or get stuck easily. So I upgraded to heavier duty Nema17 Motorslike the ones used in 3D Printers and decided to use an actual coupler to connect the 3d printed parts to the motor.
 
