@@ -7,6 +7,7 @@
 #include "FlipDisplay.h"
 
 const int GMT_OFFSET = -5;
+const int RESET_FREQUENCY = 80;
 
 class ProgramClock {
    public:
@@ -17,6 +18,7 @@ class ProgramClock {
     void run(bool buttonOne, bool programSwitch);
 
    private:
+    int _resetCountdown = RESET_FREQUENCY;
     FlipDisplay *_display;
     unsigned long _lastRunTime = 0;
 

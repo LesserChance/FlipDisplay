@@ -91,9 +91,24 @@ void FlipDisplay::run() {
 }
 
 void FlipDisplay::setDisplay(String displayString, unsigned long minDuration, bool force) {
+    Serial.print("trying to set display: ");
+    Serial.println(displayString);
+
     if (!force && !canDisplayBeUpdated()) {
 #if DEBUG
-        Serial.println("FAILED TO UPDATE DISPLAY, CURRENTLY RUNNING");
+        Serial.println("FAILED TO UPDATE DISPLAY, CURRENTLY RUNNING OR PAUSED");
+        Serial.print("_currentTime <= _acceptNextCommand: ");
+        Serial.println((_currentTime <= _acceptNextCommand));
+        if (_currentTime <= _acceptNextCommand) {
+            Serial.print("_currentTime: ");
+            Serial.println(_currentTime);
+            Serial.print("_acceptNextCommand: ");
+            Serial.println(_acceptNextCommand);
+        }
+        Serial.print("!_areMotorsMoving: ");
+        Serial.println(!_areMotorsMoving);
+        Serial.print("_nextScrollTime == 0: ");
+        Serial.println(_nextScrollTime == 0);
 #endif
         return;
     }
@@ -113,6 +128,7 @@ void FlipDisplay::setDisplay(String displayString, unsigned long minDuration, bo
 #endif
 
     setAnimationType(_setAnimationType);
+    calculateWords();
     lerpToCurrentDisplay();
 }
 
@@ -218,71 +234,60 @@ byte FlipDisplay::getRegisterOutput() {
 }
 
 void FlipDisplay::checkForScroll() {
-    if (SCROLLING_ENABLED && _nextScrollTime != 0 &&
-        _currentTime > _nextScrollTime) {
+    if (SCROLLING_ENABLED && _nextScrollTime != 0 && _currentTime > _nextScrollTime) {
         // if any motors are still moving, do not scroll
         if (_areMotorsMoving) {
             _nextScrollTime += WAIT_TO_SCROLL;
             return;
         }
 
-        // all motors are paused - we're ok to scroll now
-        _currentDisplayScrollPosition += CHARS_TO_SCROLL;
-
+        // determine if we should go to the next word
+        if (_currentDisplayWord + 1 < _currentDisplayWordCount) {
+            _currentDisplayWord++;
+            lerpToCurrentDisplay();
 #if DEBUG
-        Serial.print("SCROLLING TO POSITION: ");
-        Serial.print(_currentDisplayScrollPosition);
-
-        String displayString = _currentDisplay.substring(
-            _currentDisplayScrollPosition,
-            _currentDisplayScrollPosition + CHARACTER_COUNT);
-        Serial.print(" (");
-        Serial.print(displayString);
-        Serial.println(")");
+            Serial.print("MOVING TO WORD: ");
+            Serial.print(_currentDisplayWord);
+            Serial.print(" (");
+            Serial.print(getWord(_currentDisplayWord));
+            Serial.println(")");
 #endif
-
-        setAnimationType(_scrollAnimationType);
-        lerpToCurrentDisplay();
-    }
-}
-
-void FlipDisplay::checkForHoming() {
-    bool isHoming = false;
-
-    for (int i = START_CHARACTER; i < CHARACTER_COUNT; i++) {
-        switch (_characters[i]->getState()) {
-            case FlipDisplayCharacter::FlipDisplayCharacterState::
-                HOMING_PAST_BUTTON:
-            case FlipDisplayCharacter::FlipDisplayCharacterState::
-                HOMING_TO_BUTTON:
-            case FlipDisplayCharacter::FlipDisplayCharacterState::
-                HOMING_TO_OFFSET:
-                // true as long as at least one character is homing
-                isHoming = true;
-                break;
         }
     }
 
-    if (_isHoming && !isHoming) {
-        _isHoming = isHoming;
-        _currentDisplay = "";
-#if DEBUG_LOOP
-        Serial.println("HOMING COMPLETE");
-#endif
-    }
+
+//     if (SCROLLING_ENABLED && _nextScrollTime != 0 &&
+//         _currentTime > _nextScrollTime) {
+//         // if any motors are still moving, do not scroll
+//         if (_areMotorsMoving) {
+//             _nextScrollTime += WAIT_TO_SCROLL;
+//             return;
+//         }
+
+//         // all motors are paused - we're ok to scroll now
+//         _currentDisplayScrollPosition += CHARS_TO_SCROLL;
+
+// #if DEBUG
+//         Serial.print("SCROLLING TO POSITION: ");
+//         Serial.print(_currentDisplayScrollPosition);
+
+//         String displayString = _currentDisplay.substring(
+//             _currentDisplayScrollPosition,
+//             _currentDisplayScrollPosition + CHARACTER_COUNT);
+//         Serial.print(" (");
+//         Serial.print(displayString);
+//         Serial.println(")");
+// #endif
+
+//         setAnimationType(_scrollAnimationType);
+//         lerpToCurrentDisplay();
+//     }
 }
 
 void FlipDisplay::checkForEnable() {
     if (_isDisabled && !areAllMotorsDisabled()) {
         // need to renable the motors
         enable();
-    }
-}
-
-void FlipDisplay::checkForDisable() {
-    if (!_isDisabled && areAllMotorsDisabled()) {
-        // need to disable the motors
-        disable();
     }
 }
 
@@ -314,6 +319,38 @@ void FlipDisplay::checkForMotorsMoving() {
     _areMotorsMoving = areMotorsMoving;
 }
 
+void FlipDisplay::checkForHoming() {
+    bool isHoming = false;
+
+    for (int i = START_CHARACTER; i < CHARACTER_COUNT; i++) {
+        switch (_characters[i]->getState()) {
+            case FlipDisplayCharacter::FlipDisplayCharacterState::
+                HOMING_PAST_BUTTON:
+            case FlipDisplayCharacter::FlipDisplayCharacterState::
+                HOMING_TO_BUTTON:
+            case FlipDisplayCharacter::FlipDisplayCharacterState::
+                HOMING_TO_OFFSET:
+                // true as long as at least one character is homing
+                isHoming = true;
+                break;
+        }
+    }
+
+    if (_isHoming && !isHoming) {
+        _isHoming = isHoming;
+        _currentDisplay = "";
+#if DEBUG_LOOP
+        Serial.println("HOMING COMPLETE");
+#endif
+    }
+}
+
+void FlipDisplay::checkForDisable() {
+    if (!_isDisabled && areAllMotorsDisabled()) {
+        // need to disable the motors
+        disable();
+    }
+}
 
 bool FlipDisplay::areAllMotorsDisabled() {
     bool allMotorsDisabled = true;
@@ -333,9 +370,7 @@ bool FlipDisplay::areAllMotorsDisabled() {
 }
 
 void FlipDisplay::lerpToCurrentDisplay() {
-    String displayString = _currentDisplay.substring(
-        _currentDisplayScrollPosition,
-        _currentDisplayScrollPosition + CHARACTER_COUNT);
+    String displayString = getStringToDisplay();
     FlipDisplayLerp lerps[CHARACTER_COUNT];
 
     // determine the number of steps for each character
@@ -410,12 +445,87 @@ void FlipDisplay::lerpToCurrentDisplay() {
     }
 
     if (SCROLLING_ENABLED) {
-        // Determine if we need to scroll
-        if (_currentDisplay.length() >
-            _currentDisplayScrollPosition + CHARACTER_COUNT) {
+        if (_currentDisplayWord + 1 < _currentDisplayWordCount) {
             _nextScrollTime = _currentTime + maxDuration + WAIT_TO_SCROLL;
         } else {
-            _nextScrollTime = 0;
+             _nextScrollTime = 0;
         }
     }
+    // if (SCROLLING_ENABLED) {
+    //     // Determine if we need to scroll
+    //     if (_currentDisplay.length() >
+    //         _currentDisplayScrollPosition + CHARACTER_COUNT) {
+    //         _nextScrollTime = _currentTime + maxDuration + WAIT_TO_SCROLL;
+    //     } else {
+    //         _nextScrollTime = 0;
+    //     }
+    // }
+}
+
+void FlipDisplay::calculateWords() {
+    String currentWord = "";
+    int wordCount = 0;
+    int lastSpace = 0;
+
+    for (int i = 0; i < _currentDisplay.length(); i++) {
+        if (_currentDisplay[i] == ' ') {
+            if (currentWord.length() > CHARACTER_COUNT) {
+                // we've surpassed what we can display, chunk off the last bit
+                String word = currentWord.substring(0, lastSpace);
+                currentWord = currentWord.substring(lastSpace + 1) + _currentDisplay[i];
+
+                _currentDisplayWords[wordCount] = word;
+                wordCount++;
+            } else {
+                currentWord = currentWord + _currentDisplay[i];
+            }
+
+            lastSpace = currentWord.length() - 1;
+        } else {
+            currentWord = currentWord + _currentDisplay[i];
+        }
+    }
+
+    // we got to the end
+    if (currentWord.length() > CHARACTER_COUNT) {
+        // we've surpassed what we can display, chunk off the last bit
+        String word = currentWord.substring(0, lastSpace);
+        currentWord = currentWord.substring(lastSpace + 1);
+
+        _currentDisplayWords[wordCount] = word;
+        wordCount++;
+    }
+    
+    _currentDisplayWords[wordCount] = currentWord;
+    wordCount++;
+
+#if DEBUG
+    Serial.println("ALL WORDS: ");
+    for (int i = 0; i < wordCount; i++) {
+        Serial.println(_currentDisplayWords[i]);
+    }
+#endif
+
+    _currentDisplayWordCount = wordCount;
+    _currentDisplayWord = 0;
+}
+
+String FlipDisplay::getWord(int wordIndex) {
+    return _currentDisplayWords[wordIndex];
+}
+
+String FlipDisplay::getStringToDisplay() {
+    String displayString = _currentDisplay;
+
+    // first get a single word if necessary
+    if (_currentDisplayWordCount > 1) {
+        displayString = getWord(_currentDisplayWord);
+    }
+    
+    // next get the position based on the scroll amount
+    displayString = displayString.substring(
+        _currentDisplayScrollPosition,
+        _currentDisplayScrollPosition + CHARACTER_COUNT);
+
+    return displayString;
 }

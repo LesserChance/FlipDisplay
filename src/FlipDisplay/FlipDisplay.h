@@ -134,6 +134,9 @@ class FlipDisplay {
     // displayed)
     String _currentDisplay;
 
+    // the chunked string that is currently displayed
+    String _currentDisplayWords[MAX_WORD_COUNT];
+
     // the character objects the display is controlling
     FlipDisplayCharacter* _characters[CHARACTER_COUNT];
 
@@ -142,6 +145,12 @@ class FlipDisplay {
 
     // the index of the first character in _currentDisplay to display
     int _currentDisplayScrollPosition;
+    
+    // if _currentDisplay is multiple words, which is currently showing
+    int _currentDisplayWord = 0;
+
+    // how many words are in _currentDisplay
+    int _currentDisplayWordCount = 0;
 
     // the next time we should check to see if the display should scroll
     unsigned long _nextScrollTime = 0;
@@ -231,6 +240,26 @@ class FlipDisplay {
      * them off
      */
     void lerpToCurrentDisplay();
+
+    /**
+     * @brief split the display string into displayable chuncks, updates
+     * _currentDisplayWords, _currentDisplayWord, and _currentDisplayWordCount
+     */
+    void calculateWords();
+
+    /**
+     * @brief Get the word at the given index
+     * @param wordIndex 
+     * @return String 
+     */
+    String getWord(int wordIndex);
+
+    /**
+     * @brief given our current state whats the next portion of the string
+     *        to display
+     * @return String 
+     */
+    String getStringToDisplay();
 };
 
 #endif

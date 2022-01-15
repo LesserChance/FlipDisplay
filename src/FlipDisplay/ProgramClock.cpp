@@ -17,12 +17,22 @@ void ProgramClock::run(bool buttonOne, bool programSwitch) {
     }
 
     if (programSwitch || _currentTime >= _lastRunTime + 10000) {
+        _resetCountdown--;
+        if (_resetCountdown == 0) {
+            // reset occasionally to make sure we're handling any drift
+            setTimeByNTP();
+            _resetCountdown = RESET_FREQUENCY;
+        }
+
         _display->setDisplay(getTime());
         _lastRunTime = _currentTime;
     }
 }
 
 void ProgramClock::setTimeByNTP() {
+#if DEBUG
+        Serial.println("CLOCK: Reset clock by NTP");
+#endif
     configTime(GMT_OFFSET * 3600, 0, "pool.ntp.org");
 }
 
@@ -35,7 +45,17 @@ String ProgramClock::getTime() {
         return "";
     }
 
-    switch (timeinfo.tm_hour) {
+    int time = timeinfo.tm_hour;
+
+    // uncomment to debug more frequent changes
+    // Serial.print("min: ");
+    // Serial.print(timeinfo.tm_min);
+    // Serial.print(" => ");
+    // Serial.println(timeinfo.tm_min % 12);
+
+    // time = timeinfo.tm_min % 12;
+
+    switch (time) {
         case 1:
             return "one am";
             break;

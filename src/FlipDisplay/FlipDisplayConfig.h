@@ -6,10 +6,10 @@
 
 #include "Secrets.h"
 
-#define DEBUG 0
+#define DEBUG 1
 #define DEBUG_LOOP 0
 #define DEBUG_LERP 0
-#define DEBUG_RESPONSES 0
+#define DEBUG_RESPONSES 1
 
 #define WIFI_FAIL_COUNT 20
 
@@ -35,6 +35,7 @@
 #define TOTAL_CHARACTERS 6                 // the total number of characters we're able to control
 #define START_CHARACTER 0                  // which index is the first character (allows you to test just characters at the end)
 #define CHARACTER_COUNT 6                  // how many characters will the animations actually control (out of total)
+#define MAX_WORD_COUNT 30                  // the maximum number of words that a display cna be chunked into
 
 #define MIN_STEP_DURATION 2000             // time between steps when moving as fast as possible
 #define AVG_STEP_DURATION 4600             // time between steps for an average running speed
@@ -50,7 +51,7 @@
 #define MIN_STEPS_PER_LERP 200             // if a lerp is below this number of steps, itll do a full loop
 #define PAUSE_ENABLED_DURATION (MICROSECONDS * 5) // how long to wait (microseconds) before disabling the motor entirely when paused
 
-#define SCROLLING_ENABLED 0                // should the display scroll for strings that are too large?
+#define SCROLLING_ENABLED 1                // should the display scroll for strings that are too large?
 #define WAIT_TO_SCROLL (MICROSECONDS * 1)    // how long should we pause until we scroll to the next set of characters
 #define CHARS_TO_SCROLL 3                  // how many characters should scroll at a time
 
