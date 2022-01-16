@@ -61,8 +61,22 @@ void FlipDisplay::run() {
     if (!_powerOn) {
         return;
     }
+
+    unsigned long currentTime = micros();
+    if (currentTime < _currentTime) {
+        Serial.println("CLOCK HAS LOOPED");
+        Serial.print("_currentTime: ");
+        Serial.println(_currentTime);
+
+        Serial.print("now: ");
+        Serial.println(currentTime);
+
+         // reset all counters to handle this
+        _acceptNextCommand = 0;
+        _nextScrollTime = 0;
+    }
     
-    _currentTime = micros();
+    _currentTime = currentTime;
 
     if (_triggerRestart) {
         if (_currentTime > _triggerRestart) {
@@ -311,6 +325,10 @@ void FlipDisplay::checkForMotorsMoving() {
     if (_areMotorsMoving && !areMotorsMoving) {
 #if DEBUG
         Serial.println("MOTORS STOPPED MOVING");
+        Serial.print("_currentTime: ");
+        Serial.println(_currentTime);
+        Serial.print("_minDuration: ");
+        Serial.println(_minDuration);
 #endif
         // motors stopped moving, if we should be delaying for some period of time, set that now
         _acceptNextCommand = _currentTime + _minDuration;
@@ -487,7 +505,10 @@ void FlipDisplay::calculateWords() {
     }
 
     // we got to the end
-    if (currentWord.length() > CHARACTER_COUNT) {
+    if (lastSpace == 0) {
+        // theres just a single word
+        currentWord = _currentDisplay;
+    } else if (currentWord.length() > CHARACTER_COUNT) {
         // we've surpassed what we can display, chunk off the last bit
         String word = currentWord.substring(0, lastSpace);
         currentWord = currentWord.substring(lastSpace + 1);

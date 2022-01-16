@@ -133,7 +133,7 @@ class FlipDisplayCharacter {
     int _targetPosition;
 
     // the last time (microseconds) update() was called
-    unsigned long _currentTime;
+    unsigned long _currentTime = 0;
 
     // the time (microseconds) we first had a button state change
     unsigned long _debounceStart;

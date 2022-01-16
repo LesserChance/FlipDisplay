@@ -29,7 +29,21 @@ FlipDisplayCharacter::FlipDisplayCharacter(int characterIndex,
  *************************************/
 
 FlipDisplayCharacter::FlipDisplayCharacterState FlipDisplayCharacter::run() {
-    _currentTime = micros();
+    unsigned long currentTime = micros();
+    if (currentTime < _currentTime) {
+        Serial.println("CHARACTER CLOCK HAS LOOPED");
+        Serial.print("_currentTime: ");
+        Serial.println(_currentTime);
+        Serial.print("now: ");
+        Serial.println(currentTime);
+
+         // reset all counters to handle this
+        _pausedTime = 0;
+        _debounceStart = 0;
+        _nextStepTime = 0;
+    }
+
+    _currentTime = currentTime;
 
     stepOnTime();
 

@@ -56,7 +56,7 @@ class FlipDisplay {
      * @param minDuration how long should the display be held on this string before accepting a new command
      * @param force if true, bypass any pause
      */
-    void setDisplay(String display, unsigned long minDuration = 0, bool force = false);
+    void setDisplay(String display, unsigned long minDuration = MICROSECONDS, bool force = false);
 
     /**
      * @brief step an inidivial character once

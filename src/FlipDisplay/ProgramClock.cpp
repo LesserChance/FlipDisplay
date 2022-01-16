@@ -52,7 +52,6 @@ String ProgramClock::getTime() {
     // Serial.print(timeinfo.tm_min);
     // Serial.print(" => ");
     // Serial.println(timeinfo.tm_min % 12);
-
     // time = timeinfo.tm_min % 12;
 
     switch (time) {
