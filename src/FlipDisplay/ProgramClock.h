@@ -6,7 +6,7 @@
 
 #include "FlipDisplay.h"
 
-const int GMT_OFFSET = -5;
+const int GMT_OFFSET = -4;
 const int RESET_FREQUENCY = 80;
 
 class ProgramClock {

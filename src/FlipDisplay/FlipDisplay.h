@@ -116,6 +116,9 @@ class FlipDisplay {
      * @return false if any characters are currently changing or waiting to scroll
      */
     bool areMotorsFinished();
+    
+    // the name of the currently running program
+    String _programName;
 
    private:
     /*************************************

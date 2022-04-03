@@ -96,16 +96,36 @@ void loop() {
     readButtons();
 
     if (buttonTwoTriggered) {
-        currentProgram = !currentProgram;
+        currentProgram = (currentProgram + 1) % 3;
+        switch (currentProgram) {
+            case 0:
+                display._programName = "Clock";
+                Serial.println("PROGRAM: CLOCK");
+                break;
+            case 1:
+                display._programName = "Sonos";
+                Serial.println("PROGRAM: SONOS");
+                break;
+            case 2:
+                display._programName = "None";
+                Serial.println("PROGRAM: NONE");
+                break;
+        }
     }
 
-    // todo: switch between active programs
     switch (currentProgram) {
         case 0:
             progClock.run(buttonOneTriggered, buttonTwoTriggered);
             break;
         case 1:
             progSonos.run(buttonOneTriggered, buttonTwoTriggered);
+            break;
+        case 2:
+            // no program
+            if (buttonOneTriggered) {
+                String word = words[random(0, WORD_COUNT)];
+                display.setDisplay(word, MICROSECONDS * 30, true);
+            }
             break;
     }
 

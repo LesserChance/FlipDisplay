@@ -113,6 +113,7 @@ String FlipDisplayServer::processor(const String &var) {
     if (var == "SONOS_API_AUTH_B64") return SONOS_API_AUTH_B64;
     if (var == "SONOS_REDIRECT_URL") return SONOS_REDIRECT_URL;
     if (var == "TOGGLE_POWER") return _display->getTogglePowerValue();
+    if (var == "CURRENT_POGRAM") return _display->_programName;
 
     return String();
 }
